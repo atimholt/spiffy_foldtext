@@ -1,0 +1,6 @@
+syntax: glob
+doc/tags
+.*.un~
+*.swp
+*.swo
+
