@@ -1,15 +1,16 @@
 " Justification for this file's existence: some people use folds way less
 " frequently than I do.
 
-let s:my_fold_fill = '═'
 function! spiffy_foldtext#SpiffyFoldText() "-v-
 	let l:line1_text = spiffy_foldtext#CorrectlySpacify(getline(v:foldstart))
 	
-	let l:line1_text = s:FillWhitespace(l:line1_text)
+	if g:spf_txt.fill_whitespace
+		let l:line1_text = s:FillWhitespace(l:line1_text)" code
+	endif
 	
 	let l:lines_count = v:foldend - v:foldstart + 1
 	let l:end_text = '╡ ' . printf("%10s", l:lines_count . ' lines') . ' ╞'
-	let l:end_text .= repeat(s:my_fold_fill, 2 * v:foldlevel)
+	let l:end_text .= repeat(g:spf_txt.fillchar, 2 * v:foldlevel)
 	
 	let l:actual_winwidth = spiffy_foldtext#ActualWinwidth()
 	let l:kept_length = s:KeepLength(
@@ -21,7 +22,7 @@ function! spiffy_foldtext#SpiffyFoldText() "-v-
 	let l:under_amount = l:actual_winwidth - (strdisplaywidth(l:return_val) +
 	                                        \ strdisplaywidth(l:end_text)    )
 	if l:under_amount > 0
-		let l:return_val .= repeat(s:my_fold_fill, l:under_amount)
+		let l:return_val .= repeat(g:spf_txt.fillchar, l:under_amount)
 	endif
 	
 	let l:return_val .= l:end_text
@@ -37,14 +38,14 @@ function! s:FillWhitespace(...) "-v-
 	let l:text_to_change = substitute(
 	    \ l:text_to_change,
 	    \ '^[ ]\+',
-	    \ '\=repeat( s:my_fold_fill, strlen(submatch(0)) - 1 ) . " " ',
+	    \ '\=repeat( g:spf_txt.fillchar, strlen(submatch(0)) - 1 ) . " " ',
 	    \ 'e')
 	
 	" fill fairly wide whitespace regions
 	let l:text_to_change = substitute(
 	    \ l:text_to_change,
 	    \ ' \([ ]\{3,}\) ',
-	    \ '\=" " . repeat(s:my_fold_fill, strlen(submatch(1))) . " " ',
+	    \ '\=" " . repeat(g:spf_txt.fillchar, strlen(submatch(1))) . " " ',
 	    \ 'g')
 	
 	let l:text_to_change .= "  "
