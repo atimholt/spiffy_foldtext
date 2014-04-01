@@ -2,25 +2,30 @@
 " frequently than I do.
 
 function! spiffy_foldtext#ActualWinwidth() "-v-
-  " Assuming __current_window & __current_buffer only, for now. :/
+  " Finds the display width of that section of the window that actually shows
+  " content.
 
   let l:number_col_width = 0
+
+  " Find the width of the number column (0 if none)
   if &number
-    " Only works for the __current_buffer! (it’s the line('$') )
-    let l:number_col_width =
-        \ max([strlen(line('$')) + 1, 3])
     " This assumes the number of lines is less than 10,000,000,000
+    let l:number_col_width = max([strlen(line('$')) + 1, 3])
   elseif &relativenumber
+    " I don’t know how tall a window has to be for this number to be bigger,
+    " but I haven’t run into it.
     let l:number_col_width = 3
-    " I don’t know how tall a window has to be for this number to be
-    " bigger, but I haven’t run into it.
   endif
+
   if l:number_col_width != 0
+    " It's always at least &numberwidth (if showing).
     let l:number_col_width = max([l:number_col_width, &numberwidth])
   endif
 
   let l:signs_width = 0
   if has('signs')
+    " This seems to be the only way to find out if the signs column is even
+    " showing.
     let l:signs = []
     let l:signs_string = ''
     redir =>l:signs_string|exe "sil sign place buffer=".bufnr('')|redir end
@@ -31,16 +36,17 @@ function! spiffy_foldtext#ActualWinwidth() "-v-
     endif
   endif
 
-  " Only works for the __current_window! (it’s the winwidth(0) )
   return winwidth(0) - l:number_col_width - &foldcolumn - l:signs_width
 endfunction "-^-
 
 function! spiffy_foldtext#CorrectlySpacify(...) "-v-
+  " For converting tabs into spaces in such a way that the line is displayed
+  " exactly as it would with tabs.
+
   let l:running_result = a:1
   let l:done = 0
   while !l:done
-    " So ugly! substitute() is apparently the _only_ regex function in
-    " vimscript
+    " Replace first tab & everything after with nothing.
     let l:up_to_tab = substitute(l:running_result, '\t.*$', '', 'e')
 
     if l:running_result =~# '\t'
@@ -56,12 +62,12 @@ function! spiffy_foldtext#CorrectlySpacify(...) "-v-
       let l:done = 1
     endif
   endwhile
+
   return l:running_result
 endfunction "-^-
 
-" TODO move this line?
 set fillchars=vert:│,fold:═
-let g:my_fold_fill = '═'
+let s:my_fold_fill = '═'
 function! spiffy_foldtext#SpiffyFoldText() "-v-
   let l:line1_text = spiffy_foldtext#CorrectlySpacify(getline(v:foldstart))
 
@@ -69,19 +75,19 @@ function! spiffy_foldtext#SpiffyFoldText() "-v-
   let l:line1_text = substitute(
       \ l:line1_text,
       \ '^[ ]\+',
-      \ '\=repeat( g:my_fold_fill, strlen(submatch(0)) - 1 ) . " " ',
+      \ '\=repeat( s:my_fold_fill, strlen(submatch(0)) - 1 ) . " " ',
       \ 'e')
   " fill fairly wide whitespace regions
   let l:line1_text = substitute(
       \ l:line1_text,
       \ ' \([ ]\{3,}\) ',
-      \ '\=" " . repeat(g:my_fold_fill, strlen(submatch(1))) . " " ',
+      \ '\=" " . repeat(s:my_fold_fill, strlen(submatch(1))) . " " ',
       \ 'g')
   let l:line1_text .= "  "
 
   let l:lines_count = v:foldend - v:foldstart + 1
   let l:end_text = '╡ ' . printf("%10s", l:lines_count . ' lines') . ' ╞'
-  let l:end_text .= repeat(g:my_fold_fill, 2 * v:foldlevel)
+  let l:end_text .= repeat(s:my_fold_fill, 2 * v:foldlevel)
 
   " 'asymptotic' arrival at the right value, due to multibytes.
   " VimL sucks
@@ -104,7 +110,7 @@ function! spiffy_foldtext#SpiffyFoldText() "-v-
 
   let l:return_val = strpart(l:line1_text, 0, l:kept_length)
   if l:over_amount < 0
-    let l:return_val .= repeat(g:my_fold_fill, -1 * l:over_amount)
+    let l:return_val .= repeat(s:my_fold_fill, -1 * l:over_amount)
   endif
   let l:return_val .= l:end_text
 
