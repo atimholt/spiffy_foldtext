@@ -9,8 +9,11 @@ function! spiffy_foldtext#SpiffyFoldText() "-v-
 	endif
 	
 	let l:lines_count = v:foldend - v:foldstart + 1
-	let l:end_text = '╡ ' . printf("%10s", l:lines_count . ' lines') . ' ╞'
-	let l:end_text .= repeat(g:spf_txt.fillchar, 2 * v:foldlevel)
+	let l:end_text = g:spf_txt.left_of_linecount
+	let l:end_text .= printf("%10s", l:lines_count . ' lines')
+	let l:end_text .= g:spf_txt.foldlevel_indent_leftest
+	let l:end_text .= repeat(g:spf_txt.foldlevel_indent, (v:foldlevel - 1))
+	let l:end_text .= g:spf_txt.rightmost
 	
 	let l:actual_winwidth = spiffy_foldtext#ActualWinwidth()
 	let l:kept_length = s:KeepLength(
