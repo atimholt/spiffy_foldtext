@@ -22,7 +22,8 @@ CONTENTS                                            *spiffy_foldtext-contents*
        - foldlevel_indent_leftest    |spiffy_foldtext-foldlevel_indent_leftest|
        - left_of_linecount           |spiffy_foldtext-left_of_linecount|
        - rightmost                   |spiffy_foldtext-rightmost|
-    3. License                       |spiffy_foldtext-license|
+    3. Example                       |spiffy_foldtext-example|
+    4. License                       |spiffy_foldtext-license|
 
 ==============================================================================
 
@@ -100,27 +101,28 @@ The example code below shows the defaults.
 <    (string)
 		The string used when indenting from the right side of the
 		window [fold-level] times, except for the leftmost occurence.
-		Another sensible value might be '══' or '=='. Any length string
-		is allowed (including 0), but maybe try to be sensible about it.
+		Another sensible value might be '══' or '=='. Any length
+		string is allowed (including 0), but maybe try to be sensible
+		about it.
 
 
                                       *spiffy_foldtext-foldlevel_indent_leftest*
 >
  let g:spf_txt.foldlevel_indent_leftest = has('multi_byte') ? ' ╞═' : ' |='
 <    (string)
-		The string used for the leftmost fold-level indicator (note the
-		extra space for padding in the default). This is always drawn
-		at least once. Any length string is allowed (including 0), but
-		maybe make it the same length as foldlevel_indent, plus
-		whatever whitespace padding-space you may want.
+		The string used for the leftmost fold-level indicator (note
+		the extra space for padding in the default). This is always
+		drawn at least once. Any length string is allowed (including
+		0), but maybe make it the same length as foldlevel_indent,
+		plus whatever whitespace padding-space you may want.
 
 
                                              *spiffy_foldtext-left_of_linecount*
 >
  let g:spf_txt.left_of_linecount = has('multi_byte') ? '╡ ' : '| '
 <    (string)
-		The string that appears to the left of the line count. Note the
-		extra space for padding in the default. The left side will
+		The string that appears to the left of the line count. Note
+		the extra space for padding in the default. The left side will
 		directly touch a section of repeated fillchars, so there's no
 		need to put your fillchar there unless you want it to always
 		appear in particularly cramped situations.
@@ -130,15 +132,38 @@ The example code below shows the defaults.
 >
  let g:spf_txt.rightmost = ''
 <    (string)
-		The string that appears rightmost of all, directly touching the
-		right border of the window. The default is an empty string, but
-		something like, say, the same character as your fillchar might
-		make sense in some situations (like if a level 1 fold looks too
-		squished up to the right side to you).
-
+		The string that appears rightmost of all, directly touching
+		the right border of the window. The default is an empty
+		string, but something like, say, the same character as your
+		fillchar might make sense in some situations (like if a level
+		1 fold looks too squished up to the right side to you).
 
 ------------------------------------------------------------------------------
-LICENSE                                              *spiffy_foldtext-license*
+
+EXAMPLE                                                *spiffy_foldtext-example*
+
+Here's a bit of an example of how you might change the settings in your own
+vimrc: >
+	if has('multi_byte')
+	    let g:spf_txt = { fillchar                 = '─'
+	                      foldlevel_indent         = '──'
+	                      foldlevel_indent_leftest = '├─'
+	                      left_of_linecount        = '┤'
+	                      rightmost                = '─'  }
+	else
+	    let g:spf_txt = { fillchar                 = '-'
+	                      foldlevel_indent         = '--'
+	                      foldlevel_indent_leftest = '|-'
+	                      left_of_linecount        = '|'
+	                      rightmost                = '-'  }
+	endif
+<
+You can yank and put this directly into your vimrc if you'd like to try it, or
+even just one of the two conditional sections if you don't care about the
+other.
+
+------------------------------------------------------------------------------
+LICENSE                                                *spiffy_foldtext-license*
 
 The MIT License (MIT)
 
