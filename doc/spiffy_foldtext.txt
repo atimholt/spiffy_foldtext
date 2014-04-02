@@ -1,5 +1,5 @@
 *spiffy_foldtext.txt*  Spiffy, intelligent foldtext
-For most vim versions, tested in 7.4. Help file last change: 2014-04-01
+For most vim versions, tested in 7.4. Help file last change: 2014-04-02
 
 ------------------------------------------------------------------------------
 
@@ -16,6 +16,7 @@ For most vim versions, tested in 7.4. Help file last change: 2014-04-01
 CONTENTS                                            *spiffy_foldtext-contents*
     1. Intro                        |spiffy_foldtext|
     2. Options                      |spiffy_foldtext-options|
+       - use_multibyte              |spiffy_foldtext-use_multibyte|
        - fillchar                   |spiffy_foldtext-fillchar|
        - fill_whitespace            |spiffy_foldtext-fill_whitespace|
        - foldlevel_indent           |spiffy_foldtext-foldlevel_indent|
@@ -76,6 +77,16 @@ plugin populates the defaults in after you've filled in your own values,
 without overriding them.
 
 The example code below shows the defaults.
+
+                                               *spiffy_foldtext-use_multibyte*
+>
+ let g:spf_txt.use_multibyte = 1
+<    (boolean)
+		Whether to use the default multibyte characters & strings when
+		your vim session supports it. Note that this only affects
+		defaults. Setting your own values as multibytes will still
+		attempt to display them as you have set them, no matter what
+		value you give to g:spf_txt.use_multibyte.
 
 
                                                     *spiffy_foldtext-fillchar*
