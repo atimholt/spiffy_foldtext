@@ -145,17 +145,17 @@ EXAMPLE                                                *spiffy_foldtext-example*
 Here's a bit of an example of how you might change the settings in your own
 vimrc: >
 	if has('multi_byte')
-	    let g:spf_txt = { fillchar                 = '─'
-	                      foldlevel_indent         = '──'
-	                      foldlevel_indent_leftest = '├─'
-	                      left_of_linecount        = '┤'
-	                      rightmost                = '─'  }
+	    let g:spf_txt = { 'fillchar'                 : '─',
+	                    \ 'foldlevel_indent'         : '──',
+	                    \ 'foldlevel_indent_leftest' : '├─',
+	                    \ 'left_of_linecount'        : '┤',
+	                    \ 'rightmost'                : '─'   }
 	else
-	    let g:spf_txt = { fillchar                 = '-'
-	                      foldlevel_indent         = '--'
-	                      foldlevel_indent_leftest = '|-'
-	                      left_of_linecount        = '|'
-	                      rightmost                = '-'  }
+	    let g:spf_txt = { 'fillchar'                 : '-',
+	                    \ 'foldlevel_indent'         : '--',
+	                    \ 'foldlevel_indent_leftest' : '|-',
+	                    \ 'left_of_linecount'        : '|',
+	                    \ 'rightmost'                : '-'   }
 	endif
 <
 You can yank and put this directly into your vimrc if you'd like to try it, or
