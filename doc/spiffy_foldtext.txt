@@ -1,0 +1,166 @@
+*spiffy_foldtext.txt*  Spiffy, intelligent foldtext
+For most vim versions, tested in 7.4. Help file last change: 2014-04-01
+
+------------------------------------------------------------------------------
+
+                            _____       _ ________                           ~
+                           / ___/____  (_) __/ __/_  __                      ~
+                           \__ \/ __ \/ / /_/ /_/ / / /                      ~
+                          ___/ / /_/ / / __/ __/ /_/ /                       ~
+                         /____/ .___/_/_/ /_/  \__, /                        ~
+                             /_/              /____/                         ~
+
+                                    foldtext
+
+==============================================================================
+CONTENTS                                            *spiffy_foldtext-contents*
+    1. Intro                         |spiffy_foldtext|
+    2. Options                       |spiffy_foldtext-options|
+       - fillchar                    |spiffy_foldtext-fillchar|
+       - fill_whitespace             |spiffy_foldtext-fill_whitespace|
+       - foldlevel_indent            |spiffy_foldtext-foldlevel_indent|
+       - foldlevel_indent_leftest    |spiffy_foldtext-foldlevel_indent_leftest|
+       - left_of_linecount           |spiffy_foldtext-left_of_linecount|
+       - rightmost                   |spiffy_foldtext-rightmost|
+    3. License                       |spiffy_foldtext-license|
+
+==============================================================================
+
+INTRODUCTION                                                 *spiffy_foldtext*
+
+THIS PLUGIN IS CURRENTLY NOT OFFICIALLY RELEASED. IF YOU'VE STUMBLED UPON IT,
+FEEL FREE TO USE IT, BUT PLEASE REALIZE IT MAY NOT REPRESENT THE AUTHOR'S
+FINAL INTENT.
+
+Note: this help file contains multi-byte characters. Don't worry, they’re only
+relevant if you've actually got multi-byte characters enabled.
+
+A customizable foldtext function that properly takes into account the actual
+width of the displayable area of your windows. Meta information about the fold
+(e.g. line count, fold level) is thus able to be right-justified, leaving as
+much of the first line of the fold visible as possible.
+
+Somewhat customizable, with sensible defaults. In the current version, that
+means you can change some of the strings and characters used for drawing. The
+defaults automatically detect whether you have multi-bytes enabled, picking
+box-drawing characters when they are, and ascii alternatives when they are
+not.
+
+This plugin is meant to be drop-in-able without the need to make any
+adjustments, but settings may be tweaked if you want. There are no functions
+mapped or in need of mapping.
+
+------------------------------------------------------------------------------
+OPTIONS                                              *spiffy_foldtext-options*
+
+All spiffy-foldtext options are contained in the g:spf_txt dictionary. To make
+changes away from the default, create the dictionary with a line in your vimrc
+like this:
+>
+	let g:spf_txt = {}
+<
+and populate it with lines similar to these:
+>
+	let g:spf_txt.a_string_setting = has('multi_byte') ? '─' : '-'
+
+	" if you don't care about multi-bytes:
+	let g:spf_txt.a_string_setting = '-'
+
+	let g:spf_txt.a_boolean_setting = 0
+<
+(Or, y'know, just populate the dictionary with whatever syntax you want.)
+
+In the above examples, the name of the setting is what follows the period. The
+plugin populates the defaults in after you've filled in your own values,
+without overriding them.
+
+The example code below shows the defaults.
+
+
+                                                      *spiffy_foldtext-fillchar*
+>
+ let g:spf_txt.fillchar = has('multi_byte') ? '═' : '='
+<    (char)
+		The character used to fill much of the foldtext.
+
+
+                                               *spiffy_foldtext-fill_whitespace*
+>
+ let g:spf_txt.fill_whitespace = 1
+<    (boolean)
+		Whether or not to fill large areas of whitespace with the
+		contents of g:spf_txt.fillchar . Having this on helps you to
+		see folds even when the only other indication is far off on
+		the right side of your window.
+
+
+                                              *spiffy_foldtext-foldlevel_indent*
+>
+ let g:spf_txt.foldlevel_indent = has('multi_byte') ? '╤═' : '/='
+<    (string)
+		The string used when indenting from the right side of the
+		window [fold-level] times, except for the leftmost occurence.
+		Another sensible value might be '══' or '=='. Any length string
+		is allowed (including 0), but maybe try to be sensible about it.
+
+
+                                      *spiffy_foldtext-foldlevel_indent_leftest*
+>
+ let g:spf_txt.foldlevel_indent_leftest = has('multi_byte') ? ' ╞═' : ' |='
+<    (string)
+		The string used for the leftmost fold-level indicator (note the
+		extra space for padding in the default). This is always drawn
+		at least once. Any length string is allowed (including 0), but
+		maybe make it the same length as foldlevel_indent, plus
+		whatever whitespace padding-space you may want.
+
+
+                                             *spiffy_foldtext-left_of_linecount*
+>
+ let g:spf_txt.left_of_linecount = has('multi_byte') ? '╡ ' : '| '
+<    (string)
+		The string that appears to the left of the line count. Note the
+		extra space for padding in the default. The left side will
+		directly touch a section of repeated fillchars, so there's no
+		need to put your fillchar there unless you want it to always
+		appear in particularly cramped situations.
+
+
+                                                     *spiffy_foldtext-rightmost*
+>
+ let g:spf_txt.rightmost = ''
+<    (string)
+		The string that appears rightmost of all, directly touching the
+		right border of the window. The default is an empty string, but
+		something like, say, the same character as your fillchar might
+		make sense in some situations (like if a level 1 fold looks too
+		squished up to the right side to you).
+
+
+------------------------------------------------------------------------------
+LICENSE                                              *spiffy_foldtext-license*
+
+The MIT License (MIT)
+
+Copyright (c) 2014 Tim Holt (atimholt@gmail.com)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of
+this software and associated documentation files (the "Software"), to deal in
+the Software without restriction, including without limitation the rights to
+use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+the Software, and to permit persons to whom the Software is furnished to do so,
+subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+------------------------------------------------------------------------------
+
+ vim:tw=78:ts=8:sts=8:noet:ft=help:norl:
