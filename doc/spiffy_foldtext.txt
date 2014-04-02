@@ -14,16 +14,16 @@ For most vim versions, tested in 7.4. Help file last change: 2014-04-01
 
 ==============================================================================
 CONTENTS                                            *spiffy_foldtext-contents*
-    1. Intro                         |spiffy_foldtext|
-    2. Options                       |spiffy_foldtext-options|
-       - fillchar                    |spiffy_foldtext-fillchar|
-       - fill_whitespace             |spiffy_foldtext-fill_whitespace|
-       - foldlevel_indent            |spiffy_foldtext-foldlevel_indent|
-       - foldlevel_indent_leftest    |spiffy_foldtext-foldlevel_indent_leftest|
-       - left_of_linecount           |spiffy_foldtext-left_of_linecount|
-       - rightmost                   |spiffy_foldtext-rightmost|
-    3. Example                       |spiffy_foldtext-example|
-    4. License                       |spiffy_foldtext-license|
+    1. Intro                        |spiffy_foldtext|
+    2. Options                      |spiffy_foldtext-options|
+       - fillchar                   |spiffy_foldtext-fillchar|
+       - fill_whitespace            |spiffy_foldtext-fill_whitespace|
+       - foldlevel_indent           |spiffy_foldtext-foldlevel_indent|
+       - foldlevel_indent_leftest   |spiffy_foldtext-foldlevel_indent_leftest|
+       - left_of_linecount          |spiffy_foldtext-left_of_linecount|
+       - rightmost                  |spiffy_foldtext-rightmost|
+    3. Example                      |spiffy_foldtext-example|
+    4. License                      |spiffy_foldtext-license|
 
 ==============================================================================
 
@@ -78,14 +78,14 @@ without overriding them.
 The example code below shows the defaults.
 
 
-                                                      *spiffy_foldtext-fillchar*
+                                                    *spiffy_foldtext-fillchar*
 >
  let g:spf_txt.fillchar = has('multi_byte') ? '═' : '='
 <    (char)
 		The character used to fill much of the foldtext.
 
 
-                                               *spiffy_foldtext-fill_whitespace*
+                                             *spiffy_foldtext-fill_whitespace*
 >
  let g:spf_txt.fill_whitespace = 1
 <    (boolean)
@@ -95,7 +95,7 @@ The example code below shows the defaults.
 		the right side of your window.
 
 
-                                              *spiffy_foldtext-foldlevel_indent*
+                                            *spiffy_foldtext-foldlevel_indent*
 >
  let g:spf_txt.foldlevel_indent = has('multi_byte') ? '╤═' : '/='
 <    (string)
@@ -106,7 +106,7 @@ The example code below shows the defaults.
 		about it.
 
 
-                                      *spiffy_foldtext-foldlevel_indent_leftest*
+                                    *spiffy_foldtext-foldlevel_indent_leftest*
 >
  let g:spf_txt.foldlevel_indent_leftest = has('multi_byte') ? ' ╞═' : ' |='
 <    (string)
@@ -117,7 +117,7 @@ The example code below shows the defaults.
 		plus whatever whitespace padding-space you may want.
 
 
-                                             *spiffy_foldtext-left_of_linecount*
+                                           *spiffy_foldtext-left_of_linecount*
 >
  let g:spf_txt.left_of_linecount = has('multi_byte') ? '╡ ' : '| '
 <    (string)
@@ -128,7 +128,7 @@ The example code below shows the defaults.
 		appear in particularly cramped situations.
 
 
-                                                     *spiffy_foldtext-rightmost*
+                                                   *spiffy_foldtext-rightmost*
 >
  let g:spf_txt.rightmost = ''
 <    (string)
@@ -140,7 +140,7 @@ The example code below shows the defaults.
 
 ------------------------------------------------------------------------------
 
-EXAMPLE                                                *spiffy_foldtext-example*
+EXAMPLE                                              *spiffy_foldtext-example*
 
 Here's a bit of an example of how you might change the settings in your own
 vimrc: >
@@ -163,28 +163,29 @@ even just one of the two conditional sections if you don't care about the
 other.
 
 ------------------------------------------------------------------------------
-LICENSE                                                *spiffy_foldtext-license*
+LICENSE                                              *spiffy_foldtext-license*
 
 The MIT License (MIT)
 
 Copyright (c) 2014 Tim Holt (atimholt@gmail.com)
 
-Permission is hereby granted, free of charge, to any person obtaining a copy of
-this software and associated documentation files (the "Software"), to deal in
-the Software without restriction, including without limitation the rights to
-use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
-the Software, and to permit persons to whom the Software is furnished to do so,
-subject to the following conditions:
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
 The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
-FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
-COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
-IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
-CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 
 ------------------------------------------------------------------------------
 
