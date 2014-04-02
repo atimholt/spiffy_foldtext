@@ -8,6 +8,9 @@ function! spiffy_foldtext#SpiffyFoldText() "-v-
 		let l:line1_text = s:FillWhitespace(l:line1_text)" code
 	endif
 	
+	" For aesthetic reasons:
+	let l:line1_text .= "  "
+	
 	let l:lines_count = v:foldend - v:foldstart + 1
 	let l:end_text = g:spf_txt.left_of_linecount
 	let l:end_text .= printf("%10s", l:lines_count . ' lines')
@@ -50,8 +53,6 @@ function! s:FillWhitespace(...) "-v-
 	    \ ' \([ ]\{3,}\) ',
 	    \ '\=" " . repeat(g:spf_txt.fillchar, strlen(submatch(1))) . " " ',
 	    \ 'g')
-	
-	let l:text_to_change .= "  "
 	
 	return l:text_to_change
 endfunction "-^-

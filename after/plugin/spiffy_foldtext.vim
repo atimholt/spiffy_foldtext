@@ -21,7 +21,7 @@ if !exists("g:spf_txt.foldlevel_indent_leftest")
 	let g:spf_txt.foldlevel_indent_leftest = ( s:has_multibyte ? ' ╞═' : ' |=' )
 endif
 
-if !exists("g:sft_txt.left_of_linecount")
+if !exists("g:spf_txt.left_of_linecount")
 	let g:spf_txt.left_of_linecount = ( s:has_multibyte ? '╡ ' : '| ' )
 endif
 
