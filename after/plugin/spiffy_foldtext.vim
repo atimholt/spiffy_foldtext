@@ -14,7 +14,7 @@ if !exists("g:spf_txt.fill_whitespace")
 endif
 
 if !exists("g:spf_txt.foldlevel_indent")
-	let g:spf_txt.foldlevel_indent = ( s:has_multibyte ? '══' : '==' )
+	let g:spf_txt.foldlevel_indent = ( s:has_multibyte ? '╤═' : '/=' )
 endif
 
 if !exists("g:spf_txt.foldlevel_indent_leftest")
@@ -26,7 +26,7 @@ if !exists("g:sft_txt.left_of_linecount")
 endif
 
 if !exists("g:sft_txt.rightmost")
-	let g:spf_txt.rightmost = ( s:has_multibyte ? '═' : '=' )
+	let g:spf_txt.rightmost = ( s:has_multibyte ? '' : '' )
 endif
 
 " vim: set fmr=-v-,-^- fdm=marker list noet ts=4 sw=4 sts=4 :
