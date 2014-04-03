@@ -6,44 +6,54 @@ let s:functions = [
     \ [ 0, '%%'            , '%'                              ],
     \ [ 0, '%c'            , 'l:line1_text'                   ],
     \ [ 0, '%C'            , 's:FillWhitespace(l:line1_text)' ],
-    \ [ 1, '%<'            , '"" | let s:fill_index = len(l:parsed_so_far)' ],
-    \ [ 1, '%f{\([^}]*\)}' , '"" | let s:fill_index = len(l:parsed_so_far) | let ' ],
-    \ [ 0, '%n'            , '' ],
-    \ [ 1, '%l\([^}]*\)'   , '' ],
+    \ [ 0, '%<'            , 's:SplitMark(len(l:return_val))' ],
+    \ [ 1, '%f{\([^}]*\)}' , 's:FillMark(len(s:parsed_so_far), l:matchlist[1])' ],
+    \ [ 0, '%\(\d*\)n'     , 's:FormattedLineCount(l:matchlist[1])' ],
+    \ [ 1, '%l{\([^}]*\)}' , 's:FoldlevelIndent(l:matchlist[1])' ],
     \ ]
 
 function! spiffy_foldtext#SpiffyFoldText() "-v-
-	let l:line1_text = spiffy_foldtext#CorrectlySpacify(getline(v:foldstart))
+	let s:line1_text = spiffy_foldtext#CorrectlySpacify(getline(v:foldstart))
+	let s:lines_count = v:foldend - v:foldstart + 1
 	
 	let l:still_to_parse = l:line1_text
-	let l:parsed_so_far = ''
+	let l:return_val = ''
 	while len(l:still_to_parse) != 0
 		for [l:capture_val, l:fmt_str, l:callback] in s:functions
 			exe 'let l:matchlist = matchlist(l:still_to_parse, ''^' . l:fmt_str . '\(.*\)$'')'
 			
 			if len(l:matchlist) != 0
-				exe 'let l:parsed_so_far .= ' . l:callback
-				let l:still_to_parse = l:matchlist[l:capture_val?2:1]
+				exe 'let l:return_val .= ' . l:callback
+				let l:still_to_parse = l:matchlist[l:capture_val + 1]
 				
 				break
 			endif
 		endfor
 	endwhile
 	
+	let l:actual_winwidth = spiffy_foldtext#ActualWinwidth()
+	if strdisplaywidth(l:return_val) >= l:actual_winwidth
+		let l:before_split = strpart(l:return_val, 0, s:split_index)
+		let l:after_split = strpart(l:return_val, s:split_index)
+		
+		let l:room_for_before = l:actual_winwidth - strdisplaywidth(l:after_split)
+		"todo implement s:ChopToFit()
+		let l:before_split = s:ChopToFit(l:before_split, l:room_for_before)
+		
+		let l:return_val = l:before_split . l:after_split
+	else
+		let l:before_fill = strpart(l:return_val, 0, s:fill_index)
+		let l:after_fill = strpart(l:return_val, s:fill_index)
+		
+		let l:room_for_fill = l:actual_winwidth - strdisplaywidth(l:after_fill)
+		"TODO the work is here. Do it.
+		let l:return_val = l:before_fill . l:fill . l:after_fill
+	endif
+	
 	return l:return_val
 	
-	"let l:line1_text = spiffy_foldtext#CorrectlySpacify(getline(v:foldstart))
-	
-	"if g:spf_txt.fill_whitespace
-		"let l:line1_text = s:FillWhitespace(l:line1_text)" code
-	"endif
-	
-	"" For aesthetic reasons:
-	"let l:line1_text .= "  "
-	
-	"let l:lines_count = v:foldend - v:foldstart + 1
 	"let l:end_text = g:spf_txt.left_of_linecount
-	"let l:end_text .= printf("%10s", l:lines_count . ' lines')
+	"let l:end_text .= printf("%10s", s:lines_count . ' lines')
 	"let l:end_text .= g:spf_txt.foldlevel_indent_leftest
 	"let l:end_text .= repeat(g:spf_txt.foldlevel_indent, (v:foldlevel - 1))
 	"let l:end_text .= g:spf_txt.rightmost
@@ -105,6 +115,29 @@ function! s:KeepLength(the_line, space_available) "-v-
 	endwhile
 	
 	return l:kept_length
+endfunction "-^-
+
+function! s:FoldlevelIndent(...) "-v-
+	return repeat(a:1, v:foldlevel - 1)
+endfunction "-^-
+
+function! s:FormattedLineCount(...) "-v-
+	exe 'return printf("%' . a:1 . 's", s:lines_count)'
+endfunction "-^-
+
+function! s:SplitMark(...) "-v-
+	let s:split_index = a:1
+	return ""
+endfunction "-^-
+
+function! s:FillMark(...) "-v-
+	let s:fill_index = a:1
+	let s:fillstr = a:2
+	return ""
+endfunction "-^-
+
+function! s:ChopToFit(...) "-v-
+	
 endfunction "-^-
 
 " ────────────────────────────────────────────────────────────────────────-^-1
