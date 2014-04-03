@@ -19,16 +19,21 @@ function! spiffy_foldtext#SpiffyFoldText() "-v-
 	let l:still_to_parse = l:line1_text
 	let l:return_val = ''
 	while len(l:still_to_parse) != 0
+		let l:nomatch = 1
 		for [l:capture_val, l:fmt_str, l:callback] in s:functions
 			exe 'let l:matchlist = matchlist(l:still_to_parse, ''^' . l:fmt_str . '\(.*\)$'')'
 			
 			if len(l:matchlist) != 0
+				let l:nomatch = 0
 				exe 'let l:return_val .= ' . l:callback
 				let l:still_to_parse = l:matchlist[l:capture_val + 1]
 				
 				break
 			endif
 		endfor
+		if l:nomatch
+			let l:still_to_parse = strpart(l:still_to_parse, 1)
+		endif
 	endwhile
 	
 	let l:actual_winwidth = spiffy_foldtext#ActualWinwidth()
