@@ -15,55 +15,55 @@ let s:functions = [
 function! spiffy_foldtext#SpiffyFoldText() "-v-
 	let l:line1_text = spiffy_foldtext#CorrectlySpacify(getline(v:foldstart))
 	
-	"let l:still_to_parse = l:line1_text
-	"let l:parsed_so_far = ''
-	"while len(l:still_to_parse) != 0
-		"for [l:capture_val, l:fmt_str, l:callback] in s:functions
-			"exe 'let l:matchlist = matchlist(l:still_to_parse, ''^' . l:fmt_str . '\(.*\)$'')'
+	let l:still_to_parse = l:line1_text
+	let l:parsed_so_far = ''
+	while len(l:still_to_parse) != 0
+		for [l:capture_val, l:fmt_str, l:callback] in s:functions
+			exe 'let l:matchlist = matchlist(l:still_to_parse, ''^' . l:fmt_str . '\(.*\)$'')'
 			
-			"if len(l:matchlist) != 0
-				"exe 'let l:parsed_so_far .= ' . l:callback
-				"let l:still_to_parse = l:matchlist[l:capture_val?2:1]
+			if len(l:matchlist) != 0
+				exe 'let l:parsed_so_far .= ' . l:callback
+				let l:still_to_parse = l:matchlist[l:capture_val?2:1]
 				
-				"break
-			"endif
-		"endfor
-	"endwhile
-	
-	"return l:return_val
-	
-	let l:line1_text = spiffy_foldtext#CorrectlySpacify(getline(v:foldstart))
-	
-	if g:spf_txt.fill_whitespace
-		let l:line1_text = s:FillWhitespace(l:line1_text)" code
-	endif
-	
-	" For aesthetic reasons:
-	let l:line1_text .= "  "
-	
-	let l:lines_count = v:foldend - v:foldstart + 1
-	let l:end_text = g:spf_txt.left_of_linecount
-	let l:end_text .= printf("%10s", l:lines_count . ' lines')
-	let l:end_text .= g:spf_txt.foldlevel_indent_leftest
-	let l:end_text .= repeat(g:spf_txt.foldlevel_indent, (v:foldlevel - 1))
-	let l:end_text .= g:spf_txt.rightmost
-	
-	let l:actual_winwidth = spiffy_foldtext#ActualWinwidth()
-	let l:kept_length = s:KeepLength(
-	    \ l:line1_text,
-	    \ l:actual_winwidth - strdisplaywidth(l:end_text) )
-	
-	let l:return_val = strpart(l:line1_text, 0, l:kept_length)
-	
-	let l:under_amount = l:actual_winwidth - (strdisplaywidth(l:return_val) +
-	                                        \ strdisplaywidth(l:end_text)    )
-	if l:under_amount > 0
-		let l:return_val .= repeat(g:spf_txt.fillchar, l:under_amount)
-	endif
-	
-	let l:return_val .= l:end_text
+				break
+			endif
+		endfor
+	endwhile
 	
 	return l:return_val
+	
+	"let l:line1_text = spiffy_foldtext#CorrectlySpacify(getline(v:foldstart))
+	
+	"if g:spf_txt.fill_whitespace
+		"let l:line1_text = s:FillWhitespace(l:line1_text)" code
+	"endif
+	
+	"" For aesthetic reasons:
+	"let l:line1_text .= "  "
+	
+	"let l:lines_count = v:foldend - v:foldstart + 1
+	"let l:end_text = g:spf_txt.left_of_linecount
+	"let l:end_text .= printf("%10s", l:lines_count . ' lines')
+	"let l:end_text .= g:spf_txt.foldlevel_indent_leftest
+	"let l:end_text .= repeat(g:spf_txt.foldlevel_indent, (v:foldlevel - 1))
+	"let l:end_text .= g:spf_txt.rightmost
+	
+	"let l:actual_winwidth = spiffy_foldtext#ActualWinwidth()
+	"let l:kept_length = s:KeepLength(
+		"\ l:line1_text,
+		"\ l:actual_winwidth - strdisplaywidth(l:end_text) )
+	
+	"let l:return_val = strpart(l:line1_text, 0, l:kept_length)
+	
+	"let l:under_amount = l:actual_winwidth - (strdisplaywidth(l:return_val) +
+											"\ strdisplaywidth(l:end_text)    )
+	"if l:under_amount > 0
+		"let l:return_val .= repeat(g:spf_txt.fillchar, l:under_amount)
+	"endif
+	
+	"let l:return_val .= l:end_text
+	
+	"return l:return_val
 endfunction "-^-
 " spiffy_foldtext#CorrectlySpacify() helpers ─────────────────────────────-v-1
 
