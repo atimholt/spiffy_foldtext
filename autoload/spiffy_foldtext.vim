@@ -1,7 +1,37 @@
 " Justification for this file's existence: some people use folds way less
 " frequently than I do.
 
+let s:functions = [
+    \ [ 1, '\([^%]\+\)'    , 'l:matchlist[1]'                 ],
+    \ [ 0, '%%'            , '%'                              ],
+    \ [ 0, '%c'            , 'l:line1_text'                   ],
+    \ [ 0, '%C'            , 's:FillWhitespace(l:line1_text)' ],
+    \ [ 1, '%<'            , '"" | let s:fill_index = len(l:parsed_so_far)' ],
+    \ [ 1, '%f{\([^}]*\)}' , '"" | let s:fill_index = len(l:parsed_so_far) | let ' ],
+    \ [ 0, '%n'            , '' ],
+    \ [ 1, '%l\([^}]*\)'   , '' ],
+    \ ]
+
 function! spiffy_foldtext#SpiffyFoldText() "-v-
+	let l:line1_text = spiffy_foldtext#CorrectlySpacify(getline(v:foldstart))
+	
+	"let l:still_to_parse = l:line1_text
+	"let l:parsed_so_far = ''
+	"while len(l:still_to_parse) != 0
+		"for [l:capture_val, l:fmt_str, l:callback] in s:functions
+			"exe 'let l:matchlist = matchlist(l:still_to_parse, ''^' . l:fmt_str . '\(.*\)$'')'
+			
+			"if len(l:matchlist) != 0
+				"exe 'let l:parsed_so_far .= ' . l:callback
+				"let l:still_to_parse = l:matchlist[l:capture_val?2:1]
+				
+				"break
+			"endif
+		"endfor
+	"endwhile
+	
+	"return l:return_val
+	
 	let l:line1_text = spiffy_foldtext#CorrectlySpacify(getline(v:foldstart))
 	
 	if g:spf_txt.fill_whitespace

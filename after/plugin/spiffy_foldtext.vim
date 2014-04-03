@@ -7,6 +7,8 @@ if !exists("g:spf_txt.use_multibyte")
 	let g:spf_txt.use_multibyte = 1
 endif
 
+let s:use_multibyte = g:spf_txt.use_multibyte && has('multi_byte')
+
 if !exists("g:spf_txt.format")
 	if s:use_multibyte
 		let g:spf_txt.format = "%c  %<%f{═}╡ %4n lines ╞═%l{╤═}"
@@ -14,8 +16,6 @@ if !exists("g:spf_txt.format")
 		let g:spf_txt.format = "%c  %<%f{=}| %4n lines |=%l{/=}"
 	endif
 endif
-
-let s:use_multibyte = g:spf_txt.use_multibyte && has('multi_byte')
 
 if !exists("g:spf_txt.fillchar") || strdisplaywidth(g:spf_txt.fillchar) != 1
 	let g:spf_txt.fillchar = ( s:use_multibyte ? '═' : '=' )
