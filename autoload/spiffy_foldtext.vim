@@ -1,6 +1,9 @@
 " Justification for this file's existence: some people use folds way less
 " frequently than I do.
 
+" Also, pretend this file is an object, okay? With its script-local variables
+" and all.
+
 let s:functions = [
     \ [ 1, '\([^%]\+\)'    , 'l:matchlist[1]'                 ],
     \ [ 0, '%%'            , '%'                              ],
@@ -15,6 +18,13 @@ let s:functions = [
 function! spiffy_foldtext#SpiffyFoldText() "-v-
 	let s:line1_text = spiffy_foldtext#CorrectlySpacify(getline(v:foldstart))
 	let s:lines_count = v:foldend - v:foldstart + 1
+
+	if !exists("s:parsed_string")
+		let s:parsed_string = s:ParseFormatString(g:spf_txt.format)
+	endif
+
+	" Will (usually) be different every time this is run.
+	let l:compiled_string = s:CompileFormatString(s:parsed_string)
 	
 	let l:still_to_parse = l:line1_text
 	let l:return_val = ''
@@ -80,7 +90,16 @@ function! spiffy_foldtext#SpiffyFoldText() "-v-
 	
 	"return l:return_val
 endfunction "-^-
-" spiffy_foldtext#CorrectlySpacify() helpers ─────────────────────────────-v-1
+" spiffy_foldtext#SpiffyFoldText() helpers ─────────────────────────────-v-1
+
+function! s:ParseFormatString(...) "-v-
+	
+endfunction "-^-
+
+function! s:CompileFormatString(...) "-v-
+	" Makes the string 
+	
+endfunction "-^-
 
 function! s:FillWhitespace(...) "-v-
 	let l:text_to_change = a:1
