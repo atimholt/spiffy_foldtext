@@ -139,7 +139,7 @@ function! s:ParseFormatString(...) "-v-
 				
 				exe l:parse_datum.callback
 				
-				let l:still_to_parse = s:match_list[l:capture_val + 1]
+				let l:still_to_parse = s:match_list[l:parse_datum.capture_count + 1]
 				break
 			endif
 		endfor
