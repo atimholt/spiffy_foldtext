@@ -24,7 +24,7 @@ endif
 let s:parsed_string = deepcopy(s:empty_parse_result)
  "-^-
 
-function! s:parsed_string.AppendString(...) "-v-
+function! s:AppendString(...) "-v-
 	if type(a:1) = type("")
 		s:parsed_string.string_list[-1] .= a:1
 	else
@@ -37,12 +37,12 @@ function! s:parsed_string.AppendString(...) "-v-
 	endif
 endfunction "-^-
 
-function! s:parsed_string.MarkSplit() "-v-
+function! s:MarkSplit() "-v-
 	s:parsed_string.split_mark = len(s:parsed_string.string_list)
 	s:parsed_string.string_list += [""]
 endfunction "-^-
 
-function! s:parsed_string.MarkFill(...) "-v-
+function! s:MarkFill(...) "-v-
 	s:parsed_string.fill_mark = len(s:parsed_string.string_list)
 	s:parsed_string.fill_string = a:1
 	s:parsed_string.string_list += [""]
@@ -52,39 +52,39 @@ endfunction "-^-
 let s:literal_text = {
     \ 'capture_count' : 1,
     \ 'pattern'       : '\([^%]\+\)',
-    \ 'callback'      : 's:parsed_string.AppendString(s:match_list[1])',
+    \ 'callback'      : 's:AppendString(s:match_list[1])',
     \ }
 
 let s:escaped_percent = {
     \ 'capture_count' : 0,
     \ 'pattern'       : '%%',
-    \ 'callback'      : 's:parsed_string.AppendString("%")',
+    \ 'callback'      : 's:AppendString("%")',
     \ }
 
 let s:text_of_line = {
     \ 'capture_count' : 0,
     \ 'pattern'       : '%c',
-    \ 'callback'      : 's:parsed_string.AppendString([''l:line1_text''])',
+    \ 'callback'      : 's:AppendString([''l:line1_text''])',
     \ }
 
 let s:filled_text_of_line = {
     \ 'capture_count' : 0,
     \ 'pattern'       : '%C',
-    \ 'callback'      : 's:parsed_string.AppendString([''s:FillWhitespace(l:line1_text)''])',
+    \ 'callback'      : 's:AppendString([''s:FillWhitespace(l:line1_text)''])',
     \ }
 
 " Where the right begins and is able to overlap the left, if the line's too big.
 let s:split_mark = {
     \ 'capture_count' : 0,
     \ 'pattern'       : '%<',
-    \ 'callback'      : 's:parsed_string.MarkSplit()',
+    \ 'callback'      : 's:MarkSplit()',
     \ }
 
 " Where the fill string fills, if the line's too short.
 let s:fill_mark = {
     \ 'capture_count' : 1,
     \ 'pattern'       : '%f{\([^}]*\)}',
-    \ 'callback'      : 's:parsed_string.MarkFill(s:match_list[1])',
+    \ 'callback'      : 's:MarkFill(s:match_list[1])',
     \ }
 
 " Are these next two callbacks confusing enough for you? The idea is they need
@@ -97,14 +97,14 @@ let s:fill_mark = {
 let s:formatted_line_count = {
     \ 'capture_count' : 1,
     \ 'pattern'       : '%\(\d*\)n',
-    \ 'callback'      : 's:parsed_string.AppendString([printf("%'' . s:match_list[1] . ''s", s:lines_count)])',
+    \ 'callback'      : 's:AppendString([printf("%'' . s:match_list[1] . ''s", s:lines_count)])',
     \ }
 
 " Repeated string representing fold level (repeated v:foldlevel - 1 times)
 let s:fold_level_indent = {
     \ 'capture_count' : 1,
     \ 'pattern'       : '%l{\([^}]*\)}',
-    \ 'callback'      : 's:parsed_string.AppendString([repeat('' . s:match_list[1] .  '', v:foldlevel - 1)])',
+    \ 'callback'      : 's:AppendString([repeat('' . s:match_list[1] .  '', v:foldlevel - 1)])',
     \ }
 
 
@@ -118,15 +118,14 @@ let s:parse_data = [ s:literal_text, s:escaped_percent, s:text_of_line,
 
 function! spiffy_foldtext#SpiffyFoldText() "-v-
 	if !s:done_parsing
-		let s:parsed_string = s:ParseFormatString(g:spf_txt.format)
+		call s:ParseFormatString(g:spf_txt.format)
 	endif
 	
 	return s:CompileFormatString(s:parsed_string)
 endfunction "-^-
-" spiffy_foldtext#SpiffyFoldText() helpers ─────────────────────────────-v-1
 
 function! s:ParseFormatString(...) "-v-
-	let l:return_val = deepcopy(s:empty_parse_result)
+	let s:parsed_string = deepcopy(s:empty_parse_result)
 	
 	let l:still_to_parse = a:1
 	while len(l:still_to_parse) != 0
@@ -137,7 +136,7 @@ function! s:ParseFormatString(...) "-v-
 			if len(s:match_list) != 0
 				let l:nomatch = 0
 				
-				exe l:parse_datum.callback
+				exe 'call ' . l:parse_datum.callback
 				
 				let l:still_to_parse = s:match_list[l:parse_datum.capture_count + 1]
 				break
@@ -156,7 +155,6 @@ function! s:ParseFormatString(...) "-v-
 	endwhile
 	
 	let s:done_parsing = 1
-	return l:return_val
 endfunction "-^-
 
 function! s:CompileFormatString(...) "-v-
@@ -297,7 +295,6 @@ function! spiffy_foldtext#ActualWinwidth() "-v-
 	
 	return winwidth(0) - s:NumberColumnWidth() - &foldcolumn - s:SignsWidth()
 endfunction "-^-
-" spiffy_foldtext#ActualWinwidth() helpers ───────────────────────────────-v-1
 
 function! s:NumberColumnWidth() "-v-
 	let l:number_col_width = 0
@@ -338,7 +335,6 @@ function! s:SignsWidth() "-v-
 	return l:signs_width
 endfunction "-^-
 
-" ────────────────────────────────────────────────────────────────────────-^-1
 
 function! spiffy_foldtext#CorrectlySpacify(...) "-v-
 	" For converting tabs into spaces in such a way that the line is displayed
