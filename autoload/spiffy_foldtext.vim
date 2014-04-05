@@ -26,26 +26,26 @@ let s:parsed_string = deepcopy(s:empty_parse_result)
 
 function! s:AppendString(...) "-v-
 	if type(a:1) = type("")
-		s:parsed_string.string_list[-1] .= a:1
+		let s:parsed_string.string_list[-1] .= a:1
 	else
 		" Should be a list with a single executable string as its only element.
 		" Allows delaying output until compiling for a particular fold.
 		" Sticking it in an exe, on the right side of an assignment, MUST
 		" return a string!
 		" Funcrefs are inadequate here for various reasons.
-		s:parsed_string.string_list += [a:1, ""]
+		let s:parsed_string.string_list += [a:1, ""]
 	endif
 endfunction "-^-
 
 function! s:MarkSplit() "-v-
-	s:parsed_string.split_mark = len(s:parsed_string.string_list)
-	s:parsed_string.string_list += [""]
+	let s:parsed_string.split_mark = len(s:parsed_string.string_list)
+	let s:parsed_string.string_list += [""]
 endfunction "-^-
 
 function! s:MarkFill(...) "-v-
-	s:parsed_string.fill_mark = len(s:parsed_string.string_list)
-	s:parsed_string.fill_string = a:1
-	s:parsed_string.string_list += [""]
+	let s:parsed_string.fill_mark = len(s:parsed_string.string_list)
+	let s:parsed_string.fill_string = a:1
+	let s:parsed_string.string_list += [""]
 endfunction "-^-
 
 " Parsing Data "-v-
