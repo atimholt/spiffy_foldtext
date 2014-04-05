@@ -25,7 +25,7 @@ let s:parsed_string = deepcopy(s:empty_parse_result)
  "-^-
 
 function! s:AppendString(...) "-v-
-	if type(a:1) = type("")
+	if type(a:1) == type("")
 		let s:parsed_string.string_list[-1] .= a:1
 	else
 		" Should be a list with a single executable string as its only element.
