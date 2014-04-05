@@ -167,7 +167,7 @@ function! s:CompileFormatString(...) "-v-
 	let l:callbacked_fill_mark = -1
 	let l:callbacked_split_mark = -1
 	for i in range(len(s:parsed_string))
-		if type(s:parsed_string[i]) = type([])
+		if type(s:parsed_string[i]) == type([])
 			exe 'let l:to_append = ' . s:parsed_string[i][0]
 		else
 			let l:to_append = l:string_member
