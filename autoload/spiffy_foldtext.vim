@@ -4,6 +4,7 @@
 " Also, pretend this file is an object, okay? With its script-local variables
 " and all.
 
+" Variable default values -v-
 " Not sure of the persistance of script-local variables.
 if exists("s:empty_parse_result")
 	unlet s:empty_parse_result
@@ -21,8 +22,9 @@ if exists("s:parsed_string")
 	unlet s:parsed_string
 endif
 let s:parsed_string = deepcopy(s:empty_parse_result)
+ "-^-
 
-function! s:parsed_string.AppendString(...)
+function! s:parsed_string.AppendString(...) "-v-
 	if type(a:1) = type("")
 		s:parsed_string.string_list[-1] .= a:1
 	else
@@ -33,18 +35,18 @@ function! s:parsed_string.AppendString(...)
 		" Funcrefs are inadequate here for various reasons.
 		s:parsed_string.string_list += [a:1, ""]
 	endif
-endfunction
+endfunction "-^-
 
-function! s:parsed_string.MarkSplit()
+function! s:parsed_string.MarkSplit() "-v-
 	s:parsed_string.split_mark = len(s:parsed_string.string_list)
 	s:parsed_string.string_list += [""]
-endfunction
+endfunction "-^-
 
-function! s:parsed_string.MarkFill(...)
+function! s:parsed_string.MarkFill(...) "-v-
 	s:parsed_string.fill_mark = len(s:parsed_string.string_list)
 	s:parsed_string.fill_string = a:1
 	s:parsed_string.string_list += [""]
-endfunction
+endfunction "-^-
 
 " Parsing Data "-v-
 let s:literal_text = {
@@ -120,49 +122,6 @@ function! spiffy_foldtext#SpiffyFoldText() "-v-
 	endif
 	
 	return s:CompileFormatString(s:parsed_string)
-	
-	if strdisplaywidth(l:return_val) >= l:actual_winwidth
-		let l:before_split = strpart(l:return_val, 0, s:split_index)
-		let l:after_split = strpart(l:return_val, s:split_index)
-		
-		let l:room_for_before = l:actual_winwidth - strdisplaywidth(l:after_split)
-		"todo implement s:ChopToFit()
-		let l:before_split = s:ChopToFit(l:before_split, l:room_for_before)
-		
-		let l:return_val = l:before_split . l:after_split
-	else
-		let l:before_fill = strpart(l:return_val, 0, s:fill_index)
-		let l:after_fill = strpart(l:return_val, s:fill_index)
-		
-		let l:room_for_fill = l:actual_winwidth - strdisplaywidth(l:after_fill)
-		"TODO the work is here. Do it.
-		let l:return_val = l:before_fill . l:fill . l:after_fill
-	endif
-	
-	return l:return_val
-	
-	"let l:end_text = g:spf_txt.left_of_linecount
-	"let l:end_text .= printf("%10s", s:lines_count . ' lines')
-	"let l:end_text .= g:spf_txt.foldlevel_indent_leftest
-	"let l:end_text .= repeat(g:spf_txt.foldlevel_indent, (v:foldlevel - 1))
-	"let l:end_text .= g:spf_txt.rightmost
-	
-	"let l:actual_winwidth = spiffy_foldtext#ActualWinwidth()
-	"let l:kept_length = s:KeepLength(
-		"\ l:line1_text,
-		"\ l:actual_winwidth - strdisplaywidth(l:end_text) )
-	
-	"let l:return_val = strpart(l:line1_text, 0, l:kept_length)
-	
-	"let l:under_amount = l:actual_winwidth - (strdisplaywidth(l:return_val) +
-											"\ strdisplaywidth(l:end_text)    )
-	"if l:under_amount > 0
-		"let l:return_val .= repeat(g:spf_txt.fillchar, l:under_amount)
-	"endif
-	
-	"let l:return_val .= l:end_text
-	
-	"return l:return_val
 endfunction "-^-
 " spiffy_foldtext#SpiffyFoldText() helpers ─────────────────────────────-v-1
 
@@ -228,12 +187,43 @@ function! s:CompileFormatString(...) "-v-
 			let l:callbacked_string += [""]
 		endif
 		
-		if strdisplaywidth(join(l:callbacked_string, '')) > "TODO
-			" TODO
-		else
-			" TODO
-		endif
 	endfor
+	
+	if strdisplaywidth(join(l:callbacked_string, '')) > l:actual_winwidth
+		let l:before_split = ""
+		for i in range(l:callbacked_split_mark)
+			let l:before_split .= l:callbacked_string[i]
+		endfor
+		
+		let l:after_split = ""
+		for i in range(l:callbacked_split_mark, len(l:callbacked_string))
+			let l:after_split .= l:callbacked_string[i]
+		endfor
+		
+		let l:room_for_before = l:actual_winwidth - strdisplaywidth(l:after_split)
+		let l:before_split = s:KeepLength(l:before_split, l:room_for_before)
+		
+		let l:return_val = l:before_split . l:after_split
+	else
+		let l:before_fill = ""
+		for i in range(l:callbacked_fill_mark)
+			let l:before_fill .= l:callbacked_string[i]
+		endfor
+		
+		let l:after_fill = ""
+		for i in range(l:callbacked_fill_mark, len(l:callbacked_string))
+			let l:after_fill .= l:callbacked_string[i]
+		endfor
+		
+		let l:room_for_fill = l:actual_winwidth - strdisplaywidth(l:after_fill)
+		let l:whole_num_repeat = l:room_for_fill / strdisplaywidth(s:parsed_string.fill_string)
+		
+		let l:fill = repeat(s:parsed_string.fill_string, l:whole_num_repeat)
+		let l:fill .= s:KeepLength(s:parsed_string.fill_string, l:room_for_fill - l:whole_num_repeat)
+		
+		let l:return_val = l:before_fill . l:fill . l:after_fill
+	endif
+	return return_val
 endfunction "-^-
 
 function! s:FillWhitespace(...) "-v-
