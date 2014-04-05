@@ -97,14 +97,14 @@ let s:fill_mark = {
 let s:formatted_line_count = {
     \ 'capture_count' : 1,
     \ 'pattern'       : '%\(\d*\)n',
-    \ 'callback'      : 's:AppendString([printf("%'' . s:match_list[1] . ''s", s:lines_count)])',
+    \ 'callback'      : 's:AppendString([''printf("%'' . s:match_list[1] . ''s", s:lines_count)''])',
     \ }
 
 " Repeated string representing fold level (repeated v:foldlevel - 1 times)
 let s:fold_level_indent = {
     \ 'capture_count' : 1,
     \ 'pattern'       : '%l{\([^}]*\)}',
-    \ 'callback'      : 's:AppendString([repeat('' . s:match_list[1] .  '', v:foldlevel - 1)])',
+    \ 'callback'      : 's:AppendString([''repeat('' . s:match_list[1] .  '', v:foldlevel - 1)''])',
     \ }
 
 
