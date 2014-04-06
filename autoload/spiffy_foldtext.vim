@@ -5,47 +5,36 @@
 " and all.
 
 " Variable default values -v-
+
 " Not sure of the persistance of script-local variables.
-if exists("s:empty_parse_result")
-	unlet s:empty_parse_result
-endif
-let s:empty_parse_result = {
-    \ 'split_mark' : -1,
-    \ 'fill_mark'  : -1,
-    \ 'fill_string' : '-',
-    \ 'string_list' : [""]
-    \}
-
-let s:done_parsing = 0
-
 if exists("s:parsed_string")
 	unlet s:parsed_string
 endif
-let s:parsed_string = deepcopy(s:empty_parse_result)
- "-^-
+let s:parsed_string = [""]
+
+let s:done_parsing = 0
+"-^-
 
 function! s:AppendString(...) "-v-
-	if type(a:1) == type("")
-		let s:parsed_string.string_list[-1] .= a:1
+	if type(a:1) == type("") && type(s:parsed_string[-1]) == type("")
+		let s:parsed_string[-1] .= a:1
 	else
-		" Should be a list with a single executable string as its only element.
+		" Should be a list with a single executable string as its only element
+		" (Or a string after such).
 		" Allows delaying output until compiling for a particular fold.
 		" Sticking it in an exe, on the right side of an assignment, MUST
 		" return a string!
 		" Funcrefs are inadequate here for various reasons.
-		let s:parsed_string.string_list += [a:1, ""]
+		let s:parsed_string += [a:1]
 	endif
 endfunction "-^-
 
 function! s:MarkSplit() "-v-
-	let s:parsed_string.split_mark = len(s:parsed_string.string_list)
-	let s:parsed_string.string_list += [""]
+	let s:parsed_string.string_list += [{'mark' : 'split'}]
 endfunction "-^-
 
 function! s:MarkFill(...) "-v-
-	let s:parsed_string.fill_mark = len(s:parsed_string.string_list)
-	let s:parsed_string.fill_string = a:1
-	let s:parsed_string.string_list += [""]
+	let s:parsed_string.string_list += [{'mark' : 'fill', 'fill_string' : a:1}]
 endfunction "-^-
 
 " Parsing Data "-v-
@@ -125,13 +114,14 @@ function! spiffy_foldtext#SpiffyFoldText() "-v-
 endfunction "-^-
 
 function! s:ParseFormatString(...) "-v-
-	let s:parsed_string = deepcopy(s:empty_parse_result)
+	let s:parsed_string = [""]
 	
 	let l:still_to_parse = a:1
 	while len(l:still_to_parse) != 0
 		let l:nomatch = 1
 		for l:parse_datum in s:parse_data
-			exe 'let s:match_list = matchlist(l:still_to_parse, ''^' . l:parse_datum.pattern . '\(.*\)$'')'
+			let l:full_pattern = '^' . l:parse_datum.pattern . '\(.*\)$'
+			let s:match_list = matchlist(l:still_to_parse, l:full_pattern)
 			
 			if len(s:match_list) != 0
 				let l:nomatch = 0
@@ -162,51 +152,77 @@ function! s:CompileFormatString(...) "-v-
 	let l:line1_text = spiffy_foldtext#CorrectlySpacify(getline(v:foldstart))
 	let s:lines_count = v:foldend - v:foldstart + 1
 	
-	" Boy, this'd be cleaner with real OOP
 	let l:callbacked_string = [""]
-	let l:callbacked_fill_mark = -1
-	let l:callbacked_split_mark = -1
-	for i in range(len(s:parsed_string.string_list))
-		if type(s:parsed_string.string_list[i]) == type([])
-			exe 'let l:callbacked_string[-1] .= ' . s:parsed_string.string_list[i][0]
+	for element in s:parsed_string
+		if type(element) == type({})
+			let l:callbacked_string += [element, ""]
+		elseif type(element) == type([])
+			" This is the notation for a compile-time callback.
+			exe 'let l:callbacked_string[-1] .= ' . element[0]
 		else
-			let l:callbacked_string[-1] .= s:parsed_string.string_list[i]
+			let l:callbacked_string[-1] .= element
 		endif
-		
-		if s:parsed_string.fill_mark == i
-			let l:callbacked_fill_mark = len(l:callbacked_string)
-			let l:callbacked_string += [""]
-		endif
-		
-		if s:parsed_string.split_mark == i
-			let l:callbacked_split_mark = len(l:callbacked_string)
-			let l:callbacked_string += [""]
-		endif
-		
 	endfor
 	
-	let l:length_so_far = strdisplaywidth(join(l:callbacked_string, ''))
+	let l:length_so_far = s:LengthOfListsStrings(l:callbacked_string)
 	if l:length_so_far > l:actual_winwidth
-		let l:before_split = join(l:callbacked_string[ : l:callbacked_split_mark], '')
-		let l:after_split = join(l:callbacked_string[l:callbacked_split_mark :], '')
+		let l:before_split = ""
+		let l:after_split = ""
+		let l:is_before_split = 1
+		for element in l:callbacked_string
+			if type(element) == type("")
+				if l:is_before_split
+					let l:before_split .= element
+				else
+					let l:after_split .= element
+				endif
+			elseif type(element) == type({}) && element.mark == 'split'
+				let l:is_before_split = 0
+			endif
+		endfor
 		
 		let l:room_for_before = l:actual_winwidth - strdisplaywidth(l:after_split)
 		let l:before_split = s:KeepLength(l:before_split, l:room_for_before)
 		
 		let l:return_val = l:before_split . l:after_split
 	else
-		let l:before_fill = join(l:callbacked_string[ : l:callbacked_fill_mark], '')
-		let l:after_fill = join(l:callbacked_string[l:callbacked_fill_mark :], '')
+		let l:before_fill = ""
+		let l:after_fill = ""
+		let l:fill_string = "-"
+		let l:is_before_fill = 1
+		for element in l:callbacked_string
+			if type(element) == type("")
+				if l:is_before_fill
+					let l:before_fill .= element
+				else
+					let l:after_fill .= element
+				endif
+			elseif type(element) == type({}) && element.mark == 'fill'
+				let l:is_before_fill = 0
+				let l:fill_string = element.fill_string
+			endif
+		endfor
 		
-		let l:room_for_fill = l:actual_winwidth - strdisplaywidth(join(l:callbacked_string, ''))
-		let l:whole_num_repeat = l:room_for_fill / strdisplaywidth(s:parsed_string.fill_string)
+		let l:room_for_fill = l:actual_winwidth - (strdisplaywidth(l:before_fill) + strdisplaywidth(l:after_fill))
+		let l:whole_num_repeat = l:room_for_fill / strdisplaywidth(l:fill_string)
+		let l:frac_part_repeat = l:room_for_fill % strdisplaywidth(l:fill_string)
 		
-		let l:fill = repeat(s:parsed_string.fill_string, l:whole_num_repeat)
-		let l:fill .= s:KeepLength(s:parsed_string.fill_string, l:room_for_fill - l:whole_num_repeat)
+		let l:fill = repeat(l:fill_string, l:whole_num_repeat)
+		let l:fill .= s:KeepLength(l:fill_string, l:frac_part_repeat)
 		
 		let l:return_val = l:before_fill . l:fill . l:after_fill
 	endif
 	return return_val
+endfunction "-^-
+
+function! s:LengthOfListsStrings(...) "-v-
+	let l:return_val = 0
+	for element in a:1
+		if type(element) = type("")
+			let l:return_val .= strdisplaywidth(element)
+		endif
+	endfor
+	return l:return_val
 endfunction "-^-
 
 function! s:FillWhitespace(...) "-v-
