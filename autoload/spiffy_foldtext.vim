@@ -1,71 +1,240 @@
 " Justification for this file's existence: some people use folds way less
 " frequently than I do.
 
-let s:functions = [
-    \ [ 1, '\([^%]\+\)'    , 'l:matchlist[1]'                 ],
-    \ [ 0, '%%'            , '%'                              ],
-    \ [ 0, '%c'            , 'l:line1_text'                   ],
-    \ [ 0, '%C'            , 's:FillWhitespace(l:line1_text)' ],
-    \ [ 1, '%<'            , '"" | let s:fill_index = len(l:parsed_so_far)' ],
-    \ [ 1, '%f{\([^}]*\)}' , '"" | let s:fill_index = len(l:parsed_so_far) | let ' ],
-    \ [ 0, '%n'            , '' ],
-    \ [ 1, '%l\([^}]*\)'   , '' ],
-    \ ]
+" Also, pretend this file is an object, okay? With its script-local variables
+" and all.
+
+" Variable default values -v-
+
+" Not sure of the persistance of script-local variables.
+if exists("s:parsed_string")
+	unlet s:parsed_string
+endif
+let s:parsed_string = [""]
+
+let s:done_parsing = 0
+"-^-
+
+function! s:AppendString(...) "-v-
+	if type(a:1) == type("") && type(s:parsed_string[-1]) == type("")
+		let s:parsed_string[-1] .= a:1
+	else
+		" Should be a list with a single executable string as its only element
+		" (Or a string after such).
+		" Allows delaying output until compiling for a particular fold.
+		" Sticking it in an exe, on the right side of an assignment, MUST
+		" return a string!
+		" Funcrefs are inadequate here for various reasons.
+		let s:parsed_string += [a:1]
+	endif
+endfunction "-^-
+
+function! s:MarkSplit() "-v-
+	let s:parsed_string += [{'mark' : 'split'}]
+endfunction "-^-
+
+function! s:MarkFill(...) "-v-
+	let s:parsed_string += [{'mark' : 'fill', 'fill_string' : a:1}]
+endfunction "-^-
+
+" Parsing Data "-v-
+let s:literal_text = {
+    \ 'capture_count' : 1,
+    \ 'pattern'       : '\([^%]\+\)',
+    \ 'callback'      : 's:AppendString(s:match_list[1])',
+    \ }
+
+let s:escaped_percent = {
+    \ 'capture_count' : 0,
+    \ 'pattern'       : '%%',
+    \ 'callback'      : 's:AppendString("%")',
+    \ }
+
+let s:text_of_line = {
+    \ 'capture_count' : 0,
+    \ 'pattern'       : '%c',
+    \ 'callback'      : 's:AppendString([''l:line1_text''])',
+    \ }
+
+let s:filled_text_of_line = {
+    \ 'capture_count' : 0,
+    \ 'pattern'       : '%C',
+    \ 'callback'      : 's:AppendString([''s:FillWhitespace(l:line1_text)''])',
+    \ }
+
+" Where the right begins and is able to overlap the left, if the line's too big.
+let s:split_mark = {
+    \ 'capture_count' : 0,
+    \ 'pattern'       : '%<',
+    \ 'callback'      : 's:MarkSplit()',
+    \ }
+
+" Where the fill string fills, if the line's too short.
+let s:fill_mark = {
+    \ 'capture_count' : 1,
+    \ 'pattern'       : '%f{\([^}]*\)}',
+    \ 'callback'      : 's:MarkFill(s:match_list[1])',
+    \ }
+
+" Are these next two callbacks confusing enough for you? The idea is they need
+" the s:match_list[1] value at the time of parsing. They're appended as lists
+" of 1 member so they become compile-time callbacks (i.e., a list of string(s)
+" is executed later). So part is a parse-time callback, and part is compile
+" time.
+"
+" It's just hard to format it correctly here.
+let s:formatted_line_count = {
+    \ 'capture_count' : 1,
+    \ 'pattern'       : '%\(\d*\)n',
+    \ 'callback'      : 's:AppendString([''printf("%'' . s:match_list[1] . ''s", s:lines_count)''])',
+    \ }
+
+" Repeated string representing fold level (repeated v:foldlevel - 1 times)
+let s:fold_level_indent = {
+    \ 'capture_count' : 1,
+    \ 'pattern'       : '%l{\([^}]*\)}',
+    \ 'callback'      : 's:AppendString([''repeat("'' . s:match_list[1] .  ''", v:foldlevel - 1)''])',
+    \ }
+
+
+" Order of this list shouldn't matter unless there's deliberate pattern
+" collision. There isn't. Still, it'll be slightly faster the one time it runs
+" if the more common patterns are listed first.
+let s:parse_data = [ s:literal_text, s:escaped_percent, s:text_of_line,
+    \ s:filled_text_of_line, s:split_mark, s:fill_mark, s:formatted_line_count,
+    \ s:fold_level_indent]
+"-^-
 
 function! spiffy_foldtext#SpiffyFoldText() "-v-
-	let l:line1_text = spiffy_foldtext#CorrectlySpacify(getline(v:foldstart))
-	
-	"let l:still_to_parse = l:line1_text
-	"let l:parsed_so_far = ''
-	"while len(l:still_to_parse) != 0
-		"for [l:capture_val, l:fmt_str, l:callback] in s:functions
-			"exe 'let l:matchlist = matchlist(l:still_to_parse, ''^' . l:fmt_str . '\(.*\)$'')'
-			
-			"if len(l:matchlist) != 0
-				"exe 'let l:parsed_so_far .= ' . l:callback
-				"let l:still_to_parse = l:matchlist[l:capture_val?2:1]
-				
-				"break
-			"endif
-		"endfor
-	"endwhile
-	
-	"return l:return_val
-	
-	let l:line1_text = spiffy_foldtext#CorrectlySpacify(getline(v:foldstart))
-	
-	if g:spf_txt.fill_whitespace
-		let l:line1_text = s:FillWhitespace(l:line1_text)" code
+	if !s:done_parsing
+		call s:ParseFormatString(g:spf_txt.format)
 	endif
 	
-	" For aesthetic reasons:
-	let l:line1_text .= "  "
+	return s:CompileFormatString(s:parsed_string)
+endfunction "-^-
+
+function! s:ParseFormatString(...) "-v-
+	let s:parsed_string = [""]
 	
-	let l:lines_count = v:foldend - v:foldstart + 1
-	let l:end_text = g:spf_txt.left_of_linecount
-	let l:end_text .= printf("%10s", l:lines_count . ' lines')
-	let l:end_text .= g:spf_txt.foldlevel_indent_leftest
-	let l:end_text .= repeat(g:spf_txt.foldlevel_indent, (v:foldlevel - 1))
-	let l:end_text .= g:spf_txt.rightmost
+	let l:still_to_parse = a:1
+	while len(l:still_to_parse) != 0
+		let l:nomatch = 1
+		for l:parse_datum in s:parse_data
+			let l:full_pattern = '^' . l:parse_datum.pattern . '\(.*\)$'
+			let s:match_list = matchlist(l:still_to_parse, l:full_pattern)
+			
+			if len(s:match_list) != 0
+				let l:nomatch = 0
+				
+				exe 'call ' . l:parse_datum.callback
+				
+				let l:still_to_parse = s:match_list[l:parse_datum.capture_count + 1]
+				break
+			endif
+		endfor
+		if l:nomatch
+			" This will only happen with a badly formed format string (or one
+			" that uses patterns not available in their installed version).
+			" The user really ought to fix their string, but this at least
+			" keeps the loop from being infinite when they've made a mistake.
+			"
+			" The effect *should* be the ignoring of non-escaped %'s that
+			" aren't part of a defined pattern.
+			let l:still_to_parse = strpart(l:still_to_parse, 1)
+		endif
+	endwhile
+	
+	let s:done_parsing = 1
+endfunction "-^-
+
+function! s:CompileFormatString(...) "-v-
+	let l:line1_text = spiffy_foldtext#CorrectlySpacify(getline(v:foldstart))
+	let s:lines_count = v:foldend - v:foldstart + 1
+	
+	let l:callbacked_string = [""]
+	let l:element = ''
+	for i in range(len(s:parsed_string))
+		unlet l:element
+		let l:element = s:parsed_string[i]
+		if type(l:element) == type({})
+			let l:callbacked_string += [l:element, ""]
+		elseif type(l:element) == type([])
+			" This is the notation for a compile-time callback.
+			exe 'let l:callbacked_string[-1] .= ' . l:element[0]
+		else
+			let l:callbacked_string[-1] .= l:element
+		endif
+	endfor
 	
 	let l:actual_winwidth = spiffy_foldtext#ActualWinwidth()
-	let l:kept_length = s:KeepLength(
-	    \ l:line1_text,
-	    \ l:actual_winwidth - strdisplaywidth(l:end_text) )
-	
-	let l:return_val = strpart(l:line1_text, 0, l:kept_length)
-	
-	let l:under_amount = l:actual_winwidth - (strdisplaywidth(l:return_val) +
-	                                        \ strdisplaywidth(l:end_text)    )
-	if l:under_amount > 0
-		let l:return_val .= repeat(g:spf_txt.fillchar, l:under_amount)
+	let l:length_so_far = s:LengthOfListsStrings(l:callbacked_string)
+	if l:length_so_far > l:actual_winwidth
+		let l:before_split = ""
+		let l:after_split = ""
+		let l:is_before_split = 1
+		let element = ""
+		for i in range(len(l:callbacked_string))
+			unlet element
+			let element = l:callbacked_string[i]
+			if type(element) == type("")
+				if l:is_before_split
+					let l:before_split .= element
+				else
+					let l:after_split .= element
+				endif
+			elseif type(element) == type({}) && element.mark == 'split'
+				let l:is_before_split = 0
+			endif
+		endfor
+		
+		let l:room_for_before = l:actual_winwidth - strdisplaywidth(l:after_split)
+		let l:before_split = s:KeepLength(l:before_split, l:room_for_before)
+		
+		let l:return_val = l:before_split . l:after_split
+	else
+		let l:before_fill = ""
+		let l:after_fill = ""
+		let l:fill_string = "-"
+		let l:is_before_fill = 1
+		for i in range(len(l:callbacked_string))
+			unlet element
+			let element = l:callbacked_string[i]
+			if type(element) == type("")
+				if l:is_before_fill
+					let l:before_fill .= element
+				else
+					let l:after_fill .= element
+				endif
+			elseif type(element) == type({}) && element.mark == 'fill'
+				let l:is_before_fill = 0
+				let l:fill_string = element.fill_string
+			endif
+		endfor
+		
+		let l:room_for_fill = l:actual_winwidth - (strdisplaywidth(l:before_fill) + strdisplaywidth(l:after_fill))
+		let l:whole_num_repeat = l:room_for_fill / strdisplaywidth(l:fill_string)
+		let l:frac_part_repeat = l:room_for_fill % strdisplaywidth(l:fill_string)
+		
+		let l:fill = repeat(l:fill_string, l:whole_num_repeat)
+		let l:fill .= s:KeepLength(l:fill_string, l:frac_part_repeat)
+		
+		let l:return_val = l:before_fill . l:fill . l:after_fill
 	endif
-	
-	let l:return_val .= l:end_text
-	
+	return return_val
+endfunction "-^-
+
+function! s:LengthOfListsStrings(...) "-v-
+	let l:return_val = 0
+	let element = ""
+	for i in range(len(a:1))
+		unlet element
+		let element = a:1[i]
+		if type(element) == type("")
+			let l:return_val += strdisplaywidth(element)
+		endif
+	endfor
 	return l:return_val
 endfunction "-^-
-" spiffy_foldtext#CorrectlySpacify() helpers ─────────────────────────────-v-1
 
 function! s:FillWhitespace(...) "-v-
 	let l:text_to_change = a:1
@@ -87,16 +256,15 @@ function! s:FillWhitespace(...) "-v-
 	return l:text_to_change
 endfunction "-^-
 
-function! s:KeepLength(the_line, space_available) "-v-
+function! s:KeepLength(the_string, space_available) "-v-
 	" 'asymptotic' arrival at the right value, due to multibytes.
 	" VimL sucks
-	let l:kept_length = len(a:the_line)
-	let l:over_amount = 0
+	let l:kept_length = len(a:the_string)
 	let l:too_long = 1
 	while l:too_long && (l:kept_length > 0)
-		let l:start_display_width = strdisplaywidth(
-		    \ strpart(l:the_line, 0, l:kept_length))
-		let l:over_amount = l:start_display_width - a:space_available
+		let l:kept_strdisplaywidth = strdisplaywidth(
+		    \ strpart(a:the_string, 0, l:kept_length))
+		let l:over_amount = l:kept_strdisplaywidth - a:space_available
 		if l:over_amount > 0
 			let l:kept_length -= max([1, l:over_amount])
 		else
@@ -104,10 +272,8 @@ function! s:KeepLength(the_line, space_available) "-v-
 		endif
 	endwhile
 	
-	return l:kept_length
+	return strpart(a:the_string, 0, l:kept_length)
 endfunction "-^-
-
-" ────────────────────────────────────────────────────────────────────────-^-1
 
 function! spiffy_foldtext#ActualWinwidth() "-v-
 	" Finds the display width of that section of the window that actually shows
@@ -115,7 +281,6 @@ function! spiffy_foldtext#ActualWinwidth() "-v-
 	
 	return winwidth(0) - s:NumberColumnWidth() - &foldcolumn - s:SignsWidth()
 endfunction "-^-
-" spiffy_foldtext#ActualWinwidth() helpers ───────────────────────────────-v-1
 
 function! s:NumberColumnWidth() "-v-
 	let l:number_col_width = 0
@@ -155,8 +320,6 @@ function! s:SignsWidth() "-v-
 	
 	return l:signs_width
 endfunction "-^-
-
-" ────────────────────────────────────────────────────────────────────────-^-1
 
 function! spiffy_foldtext#CorrectlySpacify(...) "-v-
 	" For converting tabs into spaces in such a way that the line is displayed
