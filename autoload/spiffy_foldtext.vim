@@ -30,11 +30,11 @@ function! s:AppendString(...) "-v-
 endfunction "-^-
 
 function! s:MarkSplit() "-v-
-	let s:parsed_string.string_list += [{'mark' : 'split'}]
+	let s:parsed_string += [{'mark' : 'split'}]
 endfunction "-^-
 
 function! s:MarkFill(...) "-v-
-	let s:parsed_string.string_list += [{'mark' : 'fill', 'fill_string' : a:1}]
+	let s:parsed_string += [{'mark' : 'fill', 'fill_string' : a:1}]
 endfunction "-^-
 
 " Parsing Data "-v-
