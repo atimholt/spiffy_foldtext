@@ -188,30 +188,16 @@ function! s:CompileFormatString(...) "-v-
 	endfor
 	
 	if strdisplaywidth(join(l:callbacked_string, '')) > l:actual_winwidth
-		let l:before_split = ""
-		for i in range(l:callbacked_split_mark)
-			let l:before_split .= l:callbacked_string[i]
-		endfor
-		
-		let l:after_split = ""
-		for i in range(l:callbacked_split_mark, len(l:callbacked_string))
-			let l:after_split .= l:callbacked_string[i]
-		endfor
+		let l:before_split = join(l:callbacked_string[ : l:callbacked_split_mark], '')
+		let l:after_split = join(l:callbacked_string[l:callbacked_split_mark :], '')
 		
 		let l:room_for_before = l:actual_winwidth - strdisplaywidth(l:after_split)
 		let l:before_split = s:KeepLength(l:before_split, l:room_for_before)
 		
 		let l:return_val = l:before_split . l:after_split
 	else
-		let l:before_fill = ""
-		for i in range(l:callbacked_fill_mark)
-			let l:before_fill .= l:callbacked_string[i]
-		endfor
-		
-		let l:after_fill = ""
-		for i in range(l:callbacked_fill_mark, len(l:callbacked_string))
-			let l:after_fill .= l:callbacked_string[i]
-		endfor
+		let l:before_fill = join(l:callbacked_string[ : l:callbacked_fill_mark], '')
+		let l:after_fill = join(l:callbacked_string[l:callbacked_fill_mark :], '')
 		
 		let l:room_for_fill = l:actual_winwidth - strdisplaywidth(l:after_fill)
 		let l:whole_num_repeat = l:room_for_fill / strdisplaywidth(s:parsed_string.fill_string)
