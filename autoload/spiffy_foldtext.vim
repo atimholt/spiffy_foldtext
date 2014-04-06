@@ -148,7 +148,6 @@ function! s:ParseFormatString(...) "-v-
 endfunction "-^-
 
 function! s:CompileFormatString(...) "-v-
-	let l:actual_winwidth = spiffy_foldtext#ActualWinwidth()
 	let l:line1_text = spiffy_foldtext#CorrectlySpacify(getline(v:foldstart))
 	let s:lines_count = v:foldend - v:foldstart + 1
 	
@@ -167,6 +166,7 @@ function! s:CompileFormatString(...) "-v-
 		endif
 	endfor
 	
+	let l:actual_winwidth = spiffy_foldtext#ActualWinwidth()
 	let l:length_so_far = s:LengthOfListsStrings(l:callbacked_string)
 	if l:length_so_far > l:actual_winwidth
 		let l:before_split = ""
