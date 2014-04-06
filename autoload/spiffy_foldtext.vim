@@ -229,7 +229,7 @@ function! s:LengthOfListsStrings(...) "-v-
 	for i in range(len(a:1))
 		unlet element
 		let element = a:1[i]
-		if type(element) = type("")
+		if type(element) == type("")
 			let l:return_val += strdisplaywidth(element)
 		endif
 	endfor
