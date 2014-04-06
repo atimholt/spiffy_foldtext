@@ -245,7 +245,7 @@ function! s:KeepLength(the_line, space_available) "-v-
 		endif
 	endwhile
 	
-	return l:kept_length
+	return strpart(the_line, 0, l:kept_length)
 endfunction "-^-
 
 function! s:FoldlevelIndent(...) "-v-
