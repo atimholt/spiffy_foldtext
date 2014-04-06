@@ -172,7 +172,10 @@ function! s:CompileFormatString(...) "-v-
 		let l:before_split = ""
 		let l:after_split = ""
 		let l:is_before_split = 1
-		for element in l:callbacked_string
+		let element = ""
+		for i in range(len(l:callbacked_string))
+			unlet element
+			let element = l:callbacked_string[i]
 			if type(element) == type("")
 				if l:is_before_split
 					let l:before_split .= element
@@ -193,7 +196,9 @@ function! s:CompileFormatString(...) "-v-
 		let l:after_fill = ""
 		let l:fill_string = "-"
 		let l:is_before_fill = 1
-		for element in l:callbacked_string
+		for i in range(len(l:callbacked_string))
+			unlet element
+			let element = l:callbacked_string[i]
 			if type(element) == type("")
 				if l:is_before_fill
 					let l:before_fill .= element
