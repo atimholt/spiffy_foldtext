@@ -159,7 +159,7 @@ endfunction "-^-
 
 function! s:CompileFormatString(...) "-v-
 	let l:actual_winwidth = spiffy_foldtext#ActualWinwidth()
-	let s:line1_text = spiffy_foldtext#CorrectlySpacify(getline(v:foldstart))
+	let l:line1_text = spiffy_foldtext#CorrectlySpacify(getline(v:foldstart))
 	let s:lines_count = v:foldend - v:foldstart + 1
 	
 	" Boy, this'd be cleaner with real OOP
