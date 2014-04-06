@@ -168,12 +168,10 @@ function! s:CompileFormatString(...) "-v-
 	let l:callbacked_split_mark = -1
 	for i in range(len(s:parsed_string.string_list))
 		if type(s:parsed_string.string_list[i]) == type([])
-			exe 'let l:to_append = ' . s:parsed_string.string_list[i][0]
+			exe 'let l:callbacked_string[-1] .= ' . s:parsed_string.string_list[i][0]
 		else
-			let l:to_append = s:parsed_string.string_list[i]
+			let l:callbacked_string[-1] .= s:parsed_string.string_list[i]
 		endif
-		
-		let l:callbacked_string[-1] += l:to_append
 		
 		if s:parsed_string.fill_mark == i
 			let l:callbacked_fill_mark = len(l:callbacked_string)
