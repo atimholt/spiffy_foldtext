@@ -153,14 +153,17 @@ function! s:CompileFormatString(...) "-v-
 	let s:lines_count = v:foldend - v:foldstart + 1
 	
 	let l:callbacked_string = [""]
-	for element in s:parsed_string
-		if type(element) == type({})
-			let l:callbacked_string += [element, ""]
-		elseif type(element) == type([])
+	let l:element = ''
+	for i in range(len(s:parsed_string))
+		unlet l:element
+		let l:element = s:parsed_string[i]
+		if type(l:element) == type({})
+			let l:callbacked_string += [l:element, ""]
+		elseif type(l:element) == type([])
 			" This is the notation for a compile-time callback.
-			exe 'let l:callbacked_string[-1] .= ' . element[0]
+			exe 'let l:callbacked_string[-1] .= ' . l:element[0]
 		else
-			let l:callbacked_string[-1] .= element
+			let l:callbacked_string[-1] .= l:element
 		endif
 	endfor
 	
