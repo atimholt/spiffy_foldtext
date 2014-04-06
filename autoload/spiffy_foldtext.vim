@@ -93,7 +93,7 @@ let s:formatted_line_count = {
 let s:fold_level_indent = {
     \ 'capture_count' : 1,
     \ 'pattern'       : '%l{\([^}]*\)}',
-    \ 'callback'      : 's:AppendString([''repeat('' . s:match_list[1] .  '', v:foldlevel - 1)''])',
+    \ 'callback'      : 's:AppendString([''repeat("'' . s:match_list[1] .  ''", v:foldlevel - 1)''])',
     \ }
 
 
@@ -225,9 +225,12 @@ endfunction "-^-
 
 function! s:LengthOfListsStrings(...) "-v-
 	let l:return_val = 0
-	for element in a:1
+	let element = ""
+	for i in range(len(a:1))
+		unlet element
+		let element = a:1[i]
 		if type(element) = type("")
-			let l:return_val .= strdisplaywidth(element)
+			let l:return_val += strdisplaywidth(element)
 		endif
 	endfor
 	return l:return_val
