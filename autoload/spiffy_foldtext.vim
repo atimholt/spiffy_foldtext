@@ -260,7 +260,6 @@ function! s:KeepLength(the_string, space_available) "-v-
 	" 'asymptotic' arrival at the right value, due to multibytes.
 	" VimL sucks
 	let l:kept_length = len(a:the_string)
-	let l:over_amount = 0
 	let l:too_long = 1
 	while l:too_long && (l:kept_length > 0)
 		let l:kept_strdisplaywidth = strdisplaywidth(
