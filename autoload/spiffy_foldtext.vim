@@ -245,16 +245,16 @@ function! s:FillWhitespace(...) "-v-
 	return l:text_to_change
 endfunction "-^-
 
-function! s:KeepLength(the_line, space_available) "-v-
+function! s:KeepLength(the_string, space_available) "-v-
 	" 'asymptotic' arrival at the right value, due to multibytes.
 	" VimL sucks
-	let l:kept_length = len(a:the_line)
+	let l:kept_length = len(a:the_string)
 	let l:over_amount = 0
 	let l:too_long = 1
 	while l:too_long && (l:kept_length > 0)
-		let l:start_display_width = strdisplaywidth(
-		    \ strpart(l:the_line, 0, l:kept_length))
-		let l:over_amount = l:start_display_width - a:space_available
+		let l:kept_strdisplaywidth = strdisplaywidth(
+		    \ strpart(l:the_string, 0, l:kept_length))
+		let l:over_amount = l:kept_strdisplaywidth - a:space_available
 		if l:over_amount > 0
 			let l:kept_length -= max([1, l:over_amount])
 		else
@@ -262,7 +262,7 @@ function! s:KeepLength(the_line, space_available) "-v-
 		endif
 	endwhile
 	
-	return strpart(the_line, 0, l:kept_length)
+	return strpart(a:the_string, 0, l:kept_length)
 endfunction "-^-
 
 function! s:FoldlevelIndent(...) "-v-
