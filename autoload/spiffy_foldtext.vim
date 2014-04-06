@@ -264,7 +264,7 @@ function! s:KeepLength(the_string, space_available) "-v-
 	let l:too_long = 1
 	while l:too_long && (l:kept_length > 0)
 		let l:kept_strdisplaywidth = strdisplaywidth(
-		    \ strpart(l:the_string, 0, l:kept_length))
+		    \ strpart(a:the_string, 0, l:kept_length))
 		let l:over_amount = l:kept_strdisplaywidth - a:space_available
 		if l:over_amount > 0
 			let l:kept_length -= max([1, l:over_amount])
