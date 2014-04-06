@@ -265,31 +265,6 @@ function! s:KeepLength(the_string, space_available) "-v-
 	return strpart(a:the_string, 0, l:kept_length)
 endfunction "-^-
 
-function! s:FoldlevelIndent(...) "-v-
-	return repeat(a:1, v:foldlevel - 1)
-endfunction "-^-
-
-function! s:FormattedLineCount(...) "-v-
-	exe 'return printf("%' . a:1 . 's", s:lines_count)'
-endfunction "-^-
-
-function! s:SplitMark(...) "-v-
-	let s:split_index = a:1
-	return ""
-endfunction "-^-
-
-function! s:FillMark(...) "-v-
-	let s:fill_index = a:1
-	let s:fillstr = a:2
-	return ""
-endfunction "-^-
-
-function! s:ChopToFit(...) "-v-
-	
-endfunction "-^-
-
-" ────────────────────────────────────────────────────────────────────────-^-1
-
 function! spiffy_foldtext#ActualWinwidth() "-v-
 	" Finds the display width of that section of the window that actually shows
 	" content.
@@ -335,7 +310,6 @@ function! s:SignsWidth() "-v-
 	
 	return l:signs_width
 endfunction "-^-
-
 
 function! spiffy_foldtext#CorrectlySpacify(...) "-v-
 	" For converting tabs into spaces in such a way that the line is displayed
