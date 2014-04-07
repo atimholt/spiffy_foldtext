@@ -52,13 +52,13 @@ let s:escaped_percent = {
 
 let s:text_of_line = {
     \ 'capture_count' : 0,
-    \ 'pattern'       : '%c',
+    \ 'pattern'       : '\C%c',
     \ 'callback'      : 's:AppendString([''l:line1_text''])',
     \ }
 
 let s:filled_text_of_line = {
     \ 'capture_count' : 0,
-    \ 'pattern'       : '%C',
+    \ 'pattern'       : '\C%C',
     \ 'callback'      : 's:AppendString([''s:FillWhitespace(l:line1_text)''])',
     \ }
 
