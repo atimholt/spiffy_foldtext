@@ -11,9 +11,9 @@ let s:use_multibyte = g:spf_txt.use_multibyte && has('multi_byte')
 
 if !exists("g:spf_txt.format")
 	if s:use_multibyte
-		let g:spf_txt.format = "%c  %<%f{═}╡ %4n lines ╞═%l{╤═}"
+		let g:spf_txt.format = "%C  %<%f{═}╡ %4n lines ╞═%l{╤═}"
 	else
-		let g:spf_txt.format = "%c  %<%f{=}| %4n lines |=%l{/=}"
+		let g:spf_txt.format = "%C  %<%f{=}| %4n lines |=%l{/=}"
 	endif
 endif
 

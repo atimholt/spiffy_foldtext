@@ -52,13 +52,13 @@ let s:escaped_percent = {
 
 let s:text_of_line = {
     \ 'capture_count' : 0,
-    \ 'pattern'       : '%c',
+    \ 'pattern'       : '\C%c',
     \ 'callback'      : 's:AppendString([''l:line1_text''])',
     \ }
 
 let s:filled_text_of_line = {
     \ 'capture_count' : 0,
-    \ 'pattern'       : '%C',
+    \ 'pattern'       : '\C%C',
     \ 'callback'      : 's:AppendString([''s:FillWhitespace(l:line1_text)''])',
     \ }
 
@@ -257,7 +257,7 @@ function! s:FillWhitespace(...) "-v-
 endfunction "-^-
 
 function! s:KeepLength(the_string, space_available) "-v-
-	" 'asymptotic' arrival at the right value, due to multibytes.
+	" Gradual arrival at the right value, due to multibytes.
 	" VimL sucks
 	let l:kept_length = len(a:the_string)
 	let l:too_long = 1
@@ -266,7 +266,7 @@ function! s:KeepLength(the_string, space_available) "-v-
 		    \ strpart(a:the_string, 0, l:kept_length))
 		let l:over_amount = l:kept_strdisplaywidth - a:space_available
 		if l:over_amount > 0
-			let l:kept_length -= max([1, l:over_amount])
+			let l:kept_length -= 1
 		else
 			let l:too_long = 0
 		endif
