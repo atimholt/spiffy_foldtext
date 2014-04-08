@@ -10,7 +10,7 @@
 let s:literal_text = {
     \ 'capture_count' : 1,
     \ 'pattern'       : '\([^%]\+\)',
-    \ 'callback'      : 's:AppendString(s:match_list[1])',
+    \ 'callback'      : 's:AppendString(l:match_list[1])',
     \ }
 
 let s:escaped_percent = {
@@ -42,11 +42,11 @@ let s:split_mark = {
 let s:fill_mark = {
     \ 'capture_count' : 1,
     \ 'pattern'       : '%f{\([^}]*\)}',
-    \ 'callback'      : 's:MarkFill(s:match_list[1])',
+    \ 'callback'      : 's:MarkFill(l:match_list[1])',
     \ }
 
 " Are these next two callbacks confusing enough for you? The idea is they need
-" the s:match_list[1] value at the time of parsing. They're appended as lists
+" the l:match_list[1] value at the time of parsing. They're appended as lists
 " of 1 member so they become compile-time callbacks (i.e., a list of string(s)
 " is executed later). So part is a parse-time callback, and part is compile
 " time.
@@ -55,14 +55,14 @@ let s:fill_mark = {
 let s:formatted_line_count = {
     \ 'capture_count' : 1,
     \ 'pattern'       : '%\(\d*\)n',
-    \ 'callback'      : 's:AppendString([''printf("%'' . s:match_list[1] . ''s", l:lines_count)''])',
+    \ 'callback'      : 's:AppendString([''printf("%'' . l:match_list[1] . ''s", l:lines_count)''])',
     \ }
 
 " Repeated string representing fold level (repeated v:foldlevel - 1 times)
 let s:fold_level_indent = {
     \ 'capture_count' : 1,
     \ 'pattern'       : '%l{\([^}]*\)}',
-    \ 'callback'      : 's:AppendString([''repeat("'' . s:match_list[1] .  ''", v:foldlevel - 1)''])',
+    \ 'callback'      : 's:AppendString([''repeat("'' . l:match_list[1] .  ''", v:foldlevel - 1)''])',
     \ }
 
 
@@ -140,14 +140,14 @@ function! s:ParseFormatString(...) "-v-
 		let l:nomatch = 1
 		for l:parse_datum in s:parse_data
 			let l:full_pattern = '^' . l:parse_datum.pattern . '\(.*\)$'
-			let s:match_list = matchlist(l:still_to_parse, l:full_pattern)
+			let l:match_list = matchlist(l:still_to_parse, l:full_pattern)
 			
-			if len(s:match_list) != 0
+			if len(l:match_list) != 0
 				let l:nomatch = 0
 				
 				exe 'call ' . l:parse_datum.callback
 				
-				let l:still_to_parse = s:match_list[l:parse_datum.capture_count + 1]
+				let l:still_to_parse = l:match_list[l:parse_datum.capture_count + 1]
 				break
 			endif
 		endfor
