@@ -6,3 +6,4 @@ Refactor
 Custom whitespace fill
 Special-case foldtext:
   v:foldstart ends in open bracket, v:foldend start with closer
+Update the help file
