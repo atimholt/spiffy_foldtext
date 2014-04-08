@@ -1,5 +1,8 @@
 Brainstorm on more options to add.
 Refactor
+  Organize
+    split stuff up
+  decouple used values from values/functions only available at run time.
 Custom whitespace fill
 Special-case foldtext:
   v:foldstart ends in open bracket, v:foldend start with closer
