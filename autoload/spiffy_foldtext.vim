@@ -169,61 +169,15 @@ endfunction "-^-
 function! s:CompileFormatString(...) "-v-
 	
 	let l:callbacked_string = s:ExecuteCallbacks()
-	
 	let l:actual_winwidth = spiffy_foldtext#ActualWinwidth()
 	let l:length_so_far = s:LengthOfListsStrings(l:callbacked_string)
+	
 	if l:length_so_far > l:actual_winwidth
-		let l:before_split = ""
-		let l:after_split = ""
-		let l:is_before_split = 1
-		let element = ""
-		for i in range(len(l:callbacked_string))
-			unlet element
-			let element = l:callbacked_string[i]
-			if type(element) == type("")
-				if l:is_before_split
-					let l:before_split .= element
-				else
-					let l:after_split .= element
-				endif
-			elseif type(element) == type({}) && element.mark == 'split'
-				let l:is_before_split = 0
-			endif
-		endfor
-		
-		let l:room_for_before = l:actual_winwidth - strdisplaywidth(l:after_split)
-		let l:before_split = s:KeepLength(l:before_split, l:room_for_before)
-		
-		let l:return_val = l:before_split . l:after_split
+		let l:return_val = s:ConstrainTooLong(l:callbacked_string, l:actual_winwidth)
 	else
-		let l:before_fill = ""
-		let l:after_fill = ""
-		let l:fill_string = "-"
-		let l:is_before_fill = 1
-		for i in range(len(l:callbacked_string))
-			unlet element
-			let element = l:callbacked_string[i]
-			if type(element) == type("")
-				if l:is_before_fill
-					let l:before_fill .= element
-				else
-					let l:after_fill .= element
-				endif
-			elseif type(element) == type({}) && element.mark == 'fill'
-				let l:is_before_fill = 0
-				let l:fill_string = element.fill_string
-			endif
-		endfor
-		
-		let l:room_for_fill = l:actual_winwidth - (strdisplaywidth(l:before_fill) + strdisplaywidth(l:after_fill))
-		let l:whole_num_repeat = l:room_for_fill / strdisplaywidth(l:fill_string)
-		let l:frac_part_repeat = l:room_for_fill % strdisplaywidth(l:fill_string)
-		
-		let l:fill = repeat(l:fill_string, l:whole_num_repeat)
-		let l:fill .= s:KeepLength(l:fill_string, l:frac_part_repeat)
-		
-		let l:return_val = l:before_fill . l:fill . l:after_fill
+		let l:return_val = s:StretchTooShort(l:callbacked_string, l:actual_winwidth)
 	endif
+	
 	return return_val
 endfunction "-^-
     "│-v-3 │ Used by s:CompileFormatString()
@@ -266,6 +220,68 @@ function! s:LengthOfListsStrings(...) "-v-
 	return l:return_val
 endfunction "-^-
 
+function! s:ConstrainTooLong(callbacked_string, actual_winwidth) "-v-
+	" This function is highly specific to the format of the list variable
+	" callbacked_string.
+	let l:before_split = ""
+	let l:after_split = ""
+	let l:is_before_split = 1
+	let element = ""
+	for i in range(len(a:callbacked_string))
+		unlet element
+		let element = a:callbacked_string[i]
+		if type(element) == type("")
+			if l:is_before_split
+				let l:before_split .= element
+			else
+				let l:after_split .= element
+			endif
+		elseif type(element) == type({}) && element.mark == 'split'
+			let l:is_before_split = 0
+		endif
+	endfor
+	
+	let l:room_for_before = a:actual_winwidth - strdisplaywidth(l:after_split)
+	let l:before_split = s:KeepLength(l:before_split, l:room_for_before)
+	
+	return l:before_split . l:after_split
+endfunction "-^-
+
+function! s:StretchTooShort(callbacked_string, actual_winwidth) "-v-
+	" This function is highly specific to the format of the list variable
+	" callbacked_string.
+	let l:before_fill = ""
+	let l:after_fill = ""
+	let l:fill_string = "-"
+	let l:is_before_fill = 1
+	for i in range(len(a:callbacked_string))
+		unlet element
+		let element = a:callbacked_string[i]
+		if type(element) == type("")
+			if l:is_before_fill
+				let l:before_fill .= element
+			else
+				let l:after_fill .= element
+			endif
+		elseif type(element) == type({}) && element.mark == 'fill'
+			let l:is_before_fill = 0
+			let l:fill_string = element.fill_string
+		endif
+	endfor
+	
+	let l:room_for_fill = a:actual_winwidth - (strdisplaywidth(l:before_fill) + strdisplaywidth(l:after_fill))
+	let l:whole_num_repeat = l:room_for_fill / strdisplaywidth(l:fill_string)
+	let l:frac_part_repeat = l:room_for_fill % strdisplaywidth(l:fill_string)
+	
+	let l:fill = repeat(l:fill_string, l:whole_num_repeat)
+	let l:fill .= s:KeepLength(l:fill_string, l:frac_part_repeat)
+	
+	return l:before_fill . l:fill . l:after_fill
+endfunction "-^-
+
+      "│-v-4 │ Used by multiple 'children' of s:CompileFormatString()
+      "└─────┴────────────────────────────────────────────────────────
+
 function! s:KeepLength(the_string, space_available) "-v-
 	" Gradual arrival at the right value, due to multibytes.
 	" VimL sucks
@@ -284,6 +300,9 @@ function! s:KeepLength(the_string, space_available) "-v-
 	
 	return strpart(a:the_string, 0, l:kept_length)
 endfunction "-^-
+
+      "┌─────┬────────────────────────────────────────────────────────
+      "│-^-4 │ Used by multiple 'children' of s:CompileFormatString()
 
     "┌─────┬─────────────────────────────────
     "│-^-3 │ Used by s:CompileFormatString()
