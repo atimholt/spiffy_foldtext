@@ -55,7 +55,7 @@ let s:fill_mark = {
 let s:formatted_line_count = {
     \ 'capture_count' : 1,
     \ 'pattern'       : '%\(\d*\)n',
-    \ 'callback'      : 's:AppendString([''printf("%'' . s:match_list[1] . ''s", s:lines_count)''])',
+    \ 'callback'      : 's:AppendString([''printf("%'' . s:match_list[1] . ''s", l:lines_count)''])',
     \ }
 
 " Repeated string representing fold level (repeated v:foldlevel - 1 times)
@@ -167,23 +167,8 @@ function! s:ParseFormatString(...) "-v-
 endfunction "-^-
 
 function! s:CompileFormatString(...) "-v-
-	let l:line1_text = spiffy_foldtext#CorrectlySpacify(getline(v:foldstart))
-	let s:lines_count = v:foldend - v:foldstart + 1
 	
-	let l:callbacked_string = [""]
-	let l:element = ''
-	for i in range(len(s:parsed_string))
-		unlet l:element
-		let l:element = s:parsed_string[i]
-		if type(l:element) == type({})
-			let l:callbacked_string += [l:element, ""]
-		elseif type(l:element) == type([])
-			" This is the notation for a compile-time callback.
-			exe 'let l:callbacked_string[-1] .= ' . l:element[0]
-		else
-			let l:callbacked_string[-1] .= l:element
-		endif
-	endfor
+	let l:callbacked_string = s:ExecuteCallbacks()
 	
 	let l:actual_winwidth = spiffy_foldtext#ActualWinwidth()
 	let l:length_so_far = s:LengthOfListsStrings(l:callbacked_string)
@@ -243,6 +228,30 @@ function! s:CompileFormatString(...) "-v-
 endfunction "-^-
     "│-v-3 │ Used by s:CompileFormatString()
     "└─────┴─────────────────────────────────
+
+function! s:ExecuteCallbacks() "-v-
+	let l:callbacked_string = [""]
+	
+	" Used by the callbacks
+	let l:line1_text = spiffy_foldtext#CorrectlySpacify(getline(v:foldstart))
+	let l:lines_count = v:foldend - v:foldstart + 1
+	
+	let l:element = ''
+	for i in range(len(s:parsed_string))
+		unlet l:element
+		let l:element = s:parsed_string[i]
+		if type(l:element) == type({})
+			let l:callbacked_string += [l:element, ""]
+		elseif type(l:element) == type([])
+			" This is the notation for a compile-time callback.
+			exe 'let l:callbacked_string[-1] .= ' . l:element[0]
+		else
+			let l:callbacked_string[-1] .= l:element
+		endif
+	endfor
+	
+	return l:callbacked_string
+endfunction "-^-
 
 function! s:LengthOfListsStrings(...) "-v-
 	let l:return_val = 0
