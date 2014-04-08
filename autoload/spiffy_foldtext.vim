@@ -1,43 +1,12 @@
 " Justification for this file's existence: some people use folds way less
 " frequently than I do.
 
-" Also, pretend this file is an object, okay? With its script-local variables
-" and all.
+"│-v-1 │ s:parse_data stuff
+"└─────┴────────────────────
 
-" Variable default values -v-
+  "│-v-2 │ Populating s:parse_data
+  "└─────┴─────────────────────────
 
-" Not sure of the persistance of script-local variables.
-if exists("s:parsed_string")
-	unlet s:parsed_string
-endif
-let s:parsed_string = [""]
-
-let s:done_parsing = 0
-"-^-
-
-function! s:AppendString(...) "-v-
-	if type(a:1) == type("") && type(s:parsed_string[-1]) == type("")
-		let s:parsed_string[-1] .= a:1
-	else
-		" Should be a list with a single executable string as its only element
-		" (Or a string after such).
-		" Allows delaying output until compiling for a particular fold.
-		" Sticking it in an exe, on the right side of an assignment, MUST
-		" return a string!
-		" Funcrefs are inadequate here for various reasons.
-		let s:parsed_string += [a:1]
-	endif
-endfunction "-^-
-
-function! s:MarkSplit() "-v-
-	let s:parsed_string += [{'mark' : 'split'}]
-endfunction "-^-
-
-function! s:MarkFill(...) "-v-
-	let s:parsed_string += [{'mark' : 'fill', 'fill_string' : a:1}]
-endfunction "-^-
-
-" Parsing Data "-v-
 let s:literal_text = {
     \ 'capture_count' : 1,
     \ 'pattern'       : '\([^%]\+\)',
@@ -103,8 +72,56 @@ let s:fold_level_indent = {
 let s:parse_data = [ s:literal_text, s:escaped_percent, s:text_of_line,
     \ s:filled_text_of_line, s:split_mark, s:fill_mark, s:formatted_line_count,
     \ s:fold_level_indent]
-"-^-
 
+  "│-v-2 │ s:parse_data callback functions
+  "└─────┴─────────────────────────────────
+
+function! s:AppendString(...) "-v-
+	if type(a:1) == type("") && type(s:parsed_string[-1]) == type("")
+		let s:parsed_string[-1] .= a:1
+	else
+		" Should be a list with a single executable string as its only element
+		" (Or a string after such).
+		" Allows delaying output until compiling for a particular fold.
+		" Sticking it in an exe, on the right side of an assignment, MUST
+		" return a string!
+		" Funcrefs are inadequate here for various reasons.
+		let s:parsed_string += [a:1]
+	endif
+endfunction "-^-
+
+function! s:MarkSplit() "-v-
+	let s:parsed_string += [{'mark' : 'split'}]
+endfunction "-^-
+
+function! s:MarkFill(...) "-v-
+	let s:parsed_string += [{'mark' : 'fill', 'fill_string' : a:1}]
+endfunction "-^-
+
+function! s:FillWhitespace(...) "-v-
+	let l:text_to_change = a:1
+	
+	" Dashes in the indentation
+	let l:text_to_change = substitute(
+	    \ l:text_to_change,
+	    \ '^[ ]\+',
+	    \ '\=repeat( g:spf_txt.fillchar, strlen(submatch(0)) - 1 ) . " " ',
+	    \ 'e')
+	
+	" fill fairly wide whitespace regions
+	let l:text_to_change = substitute(
+	    \ l:text_to_change,
+	    \ ' \([ ]\{3,}\) ',
+	    \ '\=" " . repeat(g:spf_txt.fillchar, strlen(submatch(1))) . " " ',
+	    \ 'g')
+	
+	return l:text_to_change
+endfunction "-^-
+
+"│-v-1 │ Main functionality
+"└─────┴────────────────────
+
+let s:done_parsing = 0
 function! spiffy_foldtext#SpiffyFoldText() "-v-
 	if !s:done_parsing
 		call s:ParseFormatString(g:spf_txt.format)
@@ -112,6 +129,8 @@ function! spiffy_foldtext#SpiffyFoldText() "-v-
 	
 	return s:CompileFormatString(s:parsed_string)
 endfunction "-^-
+  "│-v-2 │ Used by spiffy_foldtext#SpiffyFoldText()
+  "└─────┴──────────────────────────────────────────
 
 function! s:ParseFormatString(...) "-v-
 	let s:parsed_string = [""]
@@ -222,6 +241,8 @@ function! s:CompileFormatString(...) "-v-
 	endif
 	return return_val
 endfunction "-^-
+    "│-v-3 │ Used by s:CompileFormatString()
+    "└─────┴─────────────────────────────────
 
 function! s:LengthOfListsStrings(...) "-v-
 	let l:return_val = 0
@@ -234,26 +255,6 @@ function! s:LengthOfListsStrings(...) "-v-
 		endif
 	endfor
 	return l:return_val
-endfunction "-^-
-
-function! s:FillWhitespace(...) "-v-
-	let l:text_to_change = a:1
-	
-	" Dashes in the indentation
-	let l:text_to_change = substitute(
-	    \ l:text_to_change,
-	    \ '^[ ]\+',
-	    \ '\=repeat( g:spf_txt.fillchar, strlen(submatch(0)) - 1 ) . " " ',
-	    \ 'e')
-	
-	" fill fairly wide whitespace regions
-	let l:text_to_change = substitute(
-	    \ l:text_to_change,
-	    \ ' \([ ]\{3,}\) ',
-	    \ '\=" " . repeat(g:spf_txt.fillchar, strlen(submatch(1))) . " " ',
-	    \ 'g')
-	
-	return l:text_to_change
 endfunction "-^-
 
 function! s:KeepLength(the_string, space_available) "-v-
@@ -275,12 +276,50 @@ function! s:KeepLength(the_string, space_available) "-v-
 	return strpart(a:the_string, 0, l:kept_length)
 endfunction "-^-
 
+    "┌─────┬─────────────────────────────────
+    "│-^-3 │ Used by s:CompileFormatString()
+
+  "┌─────┬──────────────────────────────────────────
+  "│-^-2 │ Used by spiffy_foldtext#SpiffyFoldText()
+
+"│-v-1 │ Generally useful functions
+"└─────┴────────────────────────────
+
+function! spiffy_foldtext#CorrectlySpacify(...) "-v-
+	" For converting tabs into spaces in such a way that the line is displayed
+	" exactly as it would with tabs.
+	
+	let l:running_result = a:1
+	let l:done = 0
+	while !l:done
+		" Replace first tab & everything after with nothing.
+		let l:up_to_tab = substitute(l:running_result, '\t.*$', '', 'e')
+		
+		if l:running_result =~# '\t'
+			let l:first_tab_col = strdisplaywidth(l:up_to_tab)
+			let l:first_tab_dw = strdisplaywidth("\t", l:first_tab_col)
+			
+			let l:running_result = substitute(
+			      \ l:running_result,
+			      \ '\t',
+			      \ repeat(' ', l:first_tab_dw),
+			      \ 'e' )
+		else
+			let l:done = 1
+		endif
+	endwhile
+	
+	return l:running_result
+endfunction "-^-
+
 function! spiffy_foldtext#ActualWinwidth() "-v-
 	" Finds the display width of that section of the window that actually shows
 	" content.
 	
 	return winwidth(0) - s:NumberColumnWidth() - &foldcolumn - s:SignsWidth()
 endfunction "-^-
+  "│-v-2 │ Used by spiffy_foldtext#ActualWinwidth()
+  "└─────┴──────────────────────────────────────────
 
 function! s:NumberColumnWidth() "-v-
 	let l:number_col_width = 0
@@ -321,32 +360,9 @@ function! s:SignsWidth() "-v-
 	return l:signs_width
 endfunction "-^-
 
-function! spiffy_foldtext#CorrectlySpacify(...) "-v-
-	" For converting tabs into spaces in such a way that the line is displayed
-	" exactly as it would with tabs.
-	
-	let l:running_result = a:1
-	let l:done = 0
-	while !l:done
-		" Replace first tab & everything after with nothing.
-		let l:up_to_tab = substitute(l:running_result, '\t.*$', '', 'e')
-		
-		if l:running_result =~# '\t'
-			let l:first_tab_col = strdisplaywidth(l:up_to_tab)
-			let l:first_tab_dw = strdisplaywidth("\t", l:first_tab_col)
-			
-			let l:running_result = substitute(
-			      \ l:running_result,
-			      \ '\t',
-			      \ repeat(' ', l:first_tab_dw),
-			      \ 'e' )
-		else
-			let l:done = 1
-		endif
-	endwhile
-	
-	return l:running_result
-endfunction "-^-
+  "┌─────┬──────────────────────────────────────────
+  "│-^-2 │ Used by spiffy_foldtext#ActualWinwidth()
 
+" -v-1 modeline
 " vim: set fmr=-v-,-^- fdm=marker list noet ts=4 sw=4 sts=4 :
 
