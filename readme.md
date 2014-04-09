@@ -51,9 +51,9 @@ example would make this sample text:
 
 fold to look like this:
 
-    Some text with a foldmarker {{{
+    Some text with a foldmarker {{{                                       ~
     === Some indented text ====== with a wide whitespace |    3 lines |=/=~
-    }}}
+    }}}                                                                   ~
 
 or this:
 
