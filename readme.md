@@ -146,4 +146,21 @@ documentation.
 
 ## Other Info
 
+If you feel REALLY enthusiastic about this plugin, try contributing some code
+at
+[https://bitbucket.org/atimholt/spiffy_foldtext](https://bitbucket.org/atimholt/spiffy_foldtext)
+But please contact me first if it's anything outside that list of features "I
+feel less strongly about", as described in the file doc/spiffy_foldtext.txt.
+Also, please don't be offended if I don't accept, or if I heavily modify, your
+contributions. I don't want this thing to get to bloated, or to contradict its
+own purpose, or whatever have you.
+
+or even giving me money:
+bitcoin:1FGQqbjSGHrQVeUc12LJY6F2g1TEDyJ7Ts
+and make sure to let me know who sent it and why!
+
+I'm not a lawyer, but let me try to make a disclaimer: Any money sent to me is
+not a charitable donation, it does not guarantee work, and I'll be doing
+whatever I want with it. Please don't feel the need to send me any large sums,
+this is just a simple little plugin. Doesn't hurt to ask, though, eh?
 
