@@ -126,7 +126,7 @@ endfunction "-^-
 let s:done_parsing = 0
 function! spiffy_foldtext#SpiffyFoldText() "-v-
 	if !s:done_parsing
-		call s:ParseFormatString(g:spf_txt.format)
+		call s:ParseFormatString(g:SpiffyFoldtext_format)
 	endif
 	
 	return s:CompileFormatString(s:parsed_string)

@@ -1,19 +1,15 @@
 
-if !exists("g:spf_txt")
-	let g:spf_txt = {}
+if !exists("g:SpiffyFoldtext_use_multibyte")
+	let g:SpiffyFoldtext_use_multibyte = 1
 endif
 
-if !exists("g:spf_txt.use_multibyte")
-	let g:spf_txt.use_multibyte = 1
-endif
+let s:use_multibyte = g:SpiffyFoldtext_use_multibyte && has('multi_byte')
 
-let s:use_multibyte = g:spf_txt.use_multibyte && has('multi_byte')
-
-if !exists("g:spf_txt.format")
+if !exists("g:SpiffyFoldtext_format")
 	if s:use_multibyte
-		let g:spf_txt.format = "%c{═}  %<%f{═}╡ %4n lines ╞═%l{╤═}"
+		let g:SpiffyFoldtext_format = "%c{═}  %<%f{═}╡ %4n lines ╞═%l{╤═}"
 	else
-		let g:spf_txt.format = "%c{=}  %<%f{=}| %4n lines |=%l{/=}"
+		let g:SpiffyFoldtext_format = "%c{=}  %<%f{=}| %4n lines |=%l{/=}"
 	endif
 endif
 
