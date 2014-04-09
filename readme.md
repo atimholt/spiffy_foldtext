@@ -16,8 +16,9 @@ partially folded windows. There are no functions mapped or in need of mapping.
 
 The official repository for this plugin is located on
 [bitbucket](https://bitbucket.org/atimholt/spiffy_foldtext), but a skeleton
-git repository (containing just numbered releases) is kept on [github]() for the
-sake of plugin managers that don't support Mercurial, like Vundle.
+git repository (containing just numbered releases) is kept on
+[github](https://github.com/atimholt/spiffy_foldtext) for the sake of plugin
+managers that don't support Mercurial, like Vundle.
 
 ## The Format String
 
