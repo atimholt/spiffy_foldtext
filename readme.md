@@ -164,3 +164,5 @@ not a charitable donation, it does not guarantee work, and I'll be doing
 whatever I want with it. Please don't feel the need to send me any large sums,
 this is just a simple little plugin. Doesn't hurt to ask, though, eh?
 
+This plugin is under the MIT license, full text in doc/spiffy_foldtext.txt
+
