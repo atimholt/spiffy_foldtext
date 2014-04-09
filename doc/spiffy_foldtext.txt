@@ -208,8 +208,9 @@ I still have some features I might want to add later:
 
 
 There's also a feature I kinda want to add, but it might be outside the scope
-of this plugin. Except, if it were to be done in a way compatible with this
-plugin, it would pretty much have to be _part_ of it, anyway.
+of this plugin. Plus, to be honest, I can't think of a use case, it'd just be
+neat. Except, if it were to be done in a way compatible with this plugin it
+would pretty much have to be _part_ of it, anyway.
 
 	- Placing a '!', followed by a number, immediately after a fold
 	  marker, would change the %c trigger to display the line that many
@@ -217,7 +218,7 @@ plugin, it would pretty much have to be _part_ of it, anyway.
           {{{1!1
               The next line.
           }}}
-<         would look something like this:
+<          would look something like this:
           === The next line.  =============|    3 lines |=~
 
 If you feel entusiastic about any of the above planned features, let me know.
