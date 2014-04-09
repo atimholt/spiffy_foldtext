@@ -19,16 +19,20 @@ let s:escaped_percent = {
     \ 'callback'      : 's:AppendString("%")',
     \ }
 
-let s:text_of_line = {
-    \ 'capture_count' : 0,
-    \ 'pattern'       : '\C%c',
-    \ 'callback'      : 's:AppendString([''l:line1_text''])',
+" Needs l:match_list[1] at the time of parsing, see note for
+" s:formatted_line_count & s:fold_level_indent .
+let s:filled_text_of_line = {
+    \ 'capture_count' : 1,
+    \ 'pattern'       : '%c{\([^}]*\)}',
+    \ 'callback'      : 's:AppendString([''s:FillWhitespace(l:line1_text, "'' . l:match_list[1] . ''")''])',
     \ }
 
-let s:filled_text_of_line = {
+" Yes, this pattern collides with the previous one. As such, this one must
+" come after it.
+let s:text_of_line = {
     \ 'capture_count' : 0,
-    \ 'pattern'       : '\C%C',
-    \ 'callback'      : 's:AppendString([''s:FillWhitespace(l:line1_text)''])',
+    \ 'pattern'       : '%c',
+    \ 'callback'      : 's:AppendString([''l:line1_text''])',
     \ }
 
 " Where the right begins and is able to overlap the left, if the line's too big.
@@ -66,11 +70,9 @@ let s:fold_level_indent = {
     \ }
 
 
-" Order of this list shouldn't matter unless there's deliberate pattern
-" collision. There isn't. Still, it'll be slightly faster the one time it runs
-" if the more common patterns are listed first.
-let s:parse_data = [ s:literal_text, s:escaped_percent, s:text_of_line,
-    \ s:filled_text_of_line, s:split_mark, s:fill_mark, s:formatted_line_count,
+" There is deliberate pattern collision. The order matters.
+let s:parse_data = [ s:literal_text, s:escaped_percent, s:filled_text_of_line,
+    \ s:text_of_line, s:split_mark, s:fill_mark, s:formatted_line_count,
     \ s:fold_level_indent]
 
   "│-v-2 │ s:parse_data callback functions
@@ -98,25 +100,39 @@ function! s:MarkFill(...) "-v-
 	let s:parsed_string += [{'mark' : 'fill', 'fill_string' : a:1}]
 endfunction "-^-
 
-function! s:FillWhitespace(...) "-v-
-	let l:text_to_change = a:1
+function! s:FillWhitespace(text_to_change, text_to_repeat) "-v-
+	let l:text_to_change = a:text_to_change
 	
 	" Dashes in the indentation
 	let l:text_to_change = substitute(
 	    \ l:text_to_change,
 	    \ '^[ ]\+',
-	    \ '\=repeat( g:spf_txt.fillchar, strlen(submatch(0)) - 1 ) . " " ',
+	    \ '\=s:FillSpaceWithString( a:text_to_repeat, strlen(submatch(0)) - 1 ) . " " ',
 	    \ 'e')
 	
 	" fill fairly wide whitespace regions
 	let l:text_to_change = substitute(
 	    \ l:text_to_change,
 	    \ ' \([ ]\{3,}\) ',
-	    \ '\=" " . repeat(g:spf_txt.fillchar, strlen(submatch(1))) . " " ',
+	    \ '\=" " . s:FillSpaceWithString( a:text_to_repeat, strlen(submatch(1))) . " " ',
 	    \ 'g')
 	
 	return l:text_to_change
 endfunction "-^-
+    "│-v-3 │ Used by s:FillWhitespace()
+    "└─────┴────────────────────────────
+
+function! s:FillSpaceWithString(the_string, available_dispwidth) "-v-
+	let l:whole_num_repeat = a:available_dispwidth / strdisplaywidth(a:the_string)
+	let l:frac_part_repeat = a:available_dispwidth % strdisplaywidth(a:the_string)
+	
+	let l:return_val = repeat(a:the_string, l:whole_num_repeat)
+	let l:return_val .= s:KeepLength(a:the_string, l:frac_part_repeat)
+	return l:return_val
+endfunction "-^-
+
+    "┌─────┬────────────────────────────
+    "│-^-3 │ Used by s:FillWhitespace()
 
 "│-v-1 │ Main functionality
 "└─────┴────────────────────
@@ -279,8 +295,14 @@ function! s:StretchTooShort(callbacked_string, actual_winwidth) "-v-
 	return l:before_fill . l:fill . l:after_fill
 endfunction "-^-
 
-      "│-v-4 │ Used by multiple 'children' of s:CompileFormatString()
-      "└─────┴────────────────────────────────────────────────────────
+    "┌─────┬─────────────────────────────────
+    "│-^-3 │ Used by s:CompileFormatString()
+
+  "┌─────┬──────────────────────────────────────────
+  "│-^-2 │ Used by spiffy_foldtext#SpiffyFoldText()
+
+"│-v-1 │ Used by multiple Functions
+"└─────┴────────────────────────────
 
 function! s:KeepLength(the_string, space_available) "-v-
 	" Gradual arrival at the right value, due to multibytes.
@@ -300,15 +322,6 @@ function! s:KeepLength(the_string, space_available) "-v-
 	
 	return strpart(a:the_string, 0, l:kept_length)
 endfunction "-^-
-
-      "┌─────┬────────────────────────────────────────────────────────
-      "│-^-4 │ Used by multiple 'children' of s:CompileFormatString()
-
-    "┌─────┬─────────────────────────────────
-    "│-^-3 │ Used by s:CompileFormatString()
-
-  "┌─────┬──────────────────────────────────────────
-  "│-^-2 │ Used by spiffy_foldtext#SpiffyFoldText()
 
 "│-v-1 │ Generally useful functions
 "└─────┴────────────────────────────
