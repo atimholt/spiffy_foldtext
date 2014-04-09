@@ -119,20 +119,6 @@ function! s:FillWhitespace(text_to_change, text_to_repeat) "-v-
 	
 	return l:text_to_change
 endfunction "-^-
-    "│-v-3 │ Used by s:FillWhitespace()
-    "└─────┴────────────────────────────
-
-function! s:FillSpaceWithString(the_string, available_dispwidth) "-v-
-	let l:whole_num_repeat = a:available_dispwidth / strdisplaywidth(a:the_string)
-	let l:frac_part_repeat = a:available_dispwidth % strdisplaywidth(a:the_string)
-	
-	let l:return_val = repeat(a:the_string, l:whole_num_repeat)
-	let l:return_val .= s:KeepLength(a:the_string, l:frac_part_repeat)
-	return l:return_val
-endfunction "-^-
-
-    "┌─────┬────────────────────────────
-    "│-^-3 │ Used by s:FillWhitespace()
 
 "│-v-1 │ Main functionality
 "└─────┴────────────────────
@@ -286,11 +272,7 @@ function! s:StretchTooShort(callbacked_string, actual_winwidth) "-v-
 	endfor
 	
 	let l:room_for_fill = a:actual_winwidth - (strdisplaywidth(l:before_fill) + strdisplaywidth(l:after_fill))
-	let l:whole_num_repeat = l:room_for_fill / strdisplaywidth(l:fill_string)
-	let l:frac_part_repeat = l:room_for_fill % strdisplaywidth(l:fill_string)
-	
-	let l:fill = repeat(l:fill_string, l:whole_num_repeat)
-	let l:fill .= s:KeepLength(l:fill_string, l:frac_part_repeat)
+	let l:fill = s:FillSpaceWithString(l:fill_string, l:room_for_fill)
 	
 	return l:before_fill . l:fill . l:after_fill
 endfunction "-^-
@@ -321,6 +303,15 @@ function! s:KeepLength(the_string, space_available) "-v-
 	endwhile
 	
 	return strpart(a:the_string, 0, l:kept_length)
+endfunction "-^-
+
+function! s:FillSpaceWithString(the_string, available_dispwidth) "-v-
+	let l:whole_num_repeat = a:available_dispwidth / strdisplaywidth(a:the_string)
+	let l:frac_part_repeat = a:available_dispwidth % strdisplaywidth(a:the_string)
+	
+	let l:return_val = repeat(a:the_string, l:whole_num_repeat)
+	let l:return_val .= s:KeepLength(a:the_string, l:frac_part_repeat)
+	return l:return_val
 endfunction "-^-
 
 "│-v-1 │ Generally useful functions
