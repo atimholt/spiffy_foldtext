@@ -1,19 +1,82 @@
 " Justification for this file's existence: some people use folds way less
 " frequently than I do.
 
-" Also, pretend this file is an object, okay? With its script-local variables
-" and all.
+"│-v-1 │ s:parse_data stuff
+"└─────┴────────────────────
 
-" Variable default values -v-
+  "│-v-2 │ Populating s:parse_data
+  "└─────┴─────────────────────────
 
-" Not sure of the persistance of script-local variables.
-if exists("s:parsed_string")
-	unlet s:parsed_string
-endif
-let s:parsed_string = [""]
+let s:literal_text = {
+    \ 'capture_count' : 1,
+    \ 'pattern'       : '\([^%]\+\)',
+    \ 'callback'      : 's:AppendString(l:match_list[1])',
+    \ }
 
-let s:done_parsing = 0
-"-^-
+let s:escaped_percent = {
+    \ 'capture_count' : 0,
+    \ 'pattern'       : '%%',
+    \ 'callback'      : 's:AppendString("%")',
+    \ }
+
+" Needs l:match_list[1] at the time of parsing, see note for
+" s:formatted_line_count & s:fold_level_indent .
+let s:filled_text_of_line = {
+    \ 'capture_count' : 1,
+    \ 'pattern'       : '%c{\([^}]*\)}',
+    \ 'callback'      : 's:AppendString([''s:FillWhitespace(l:line1_text, "'' . l:match_list[1] . ''")''])',
+    \ }
+
+" Yes, this pattern collides with the previous one. As such, this one must
+" come after it.
+let s:text_of_line = {
+    \ 'capture_count' : 0,
+    \ 'pattern'       : '%c',
+    \ 'callback'      : 's:AppendString([''l:line1_text''])',
+    \ }
+
+" Where the right begins and is able to overlap the left, if the line's too big.
+let s:split_mark = {
+    \ 'capture_count' : 0,
+    \ 'pattern'       : '%<',
+    \ 'callback'      : 's:MarkSplit()',
+    \ }
+
+" Where the fill string fills, if the line's too short.
+let s:fill_mark = {
+    \ 'capture_count' : 1,
+    \ 'pattern'       : '%f{\([^}]*\)}',
+    \ 'callback'      : 's:MarkFill(l:match_list[1])',
+    \ }
+
+" Are these next two callbacks confusing enough for you? The idea is they need
+" the l:match_list[1] value at the time of parsing. They're appended as lists
+" of 1 member so they become compile-time callbacks (i.e., a list of string(s)
+" is executed later). So part is a parse-time callback, and part is compile
+" time.
+"
+" It's just hard to format it correctly here.
+let s:formatted_line_count = {
+    \ 'capture_count' : 1,
+    \ 'pattern'       : '%\(\d*\)n',
+    \ 'callback'      : 's:AppendString([''printf("%'' . l:match_list[1] . ''s", l:lines_count)''])',
+    \ }
+
+" Repeated string representing fold level (repeated v:foldlevel - 1 times)
+let s:fold_level_indent = {
+    \ 'capture_count' : 1,
+    \ 'pattern'       : '%l{\([^}]*\)}',
+    \ 'callback'      : 's:AppendString([''repeat("'' . l:match_list[1] .  ''", v:foldlevel - 1)''])',
+    \ }
+
+
+" There is deliberate pattern collision. The order matters.
+let s:parse_data = [ s:literal_text, s:escaped_percent, s:filled_text_of_line,
+    \ s:text_of_line, s:split_mark, s:fill_mark, s:formatted_line_count,
+    \ s:fold_level_indent]
+
+  "│-v-2 │ s:parse_data callback functions
+  "└─────┴─────────────────────────────────
 
 function! s:AppendString(...) "-v-
 	if type(a:1) == type("") && type(s:parsed_string[-1]) == type("")
@@ -37,81 +100,39 @@ function! s:MarkFill(...) "-v-
 	let s:parsed_string += [{'mark' : 'fill', 'fill_string' : a:1}]
 endfunction "-^-
 
-" Parsing Data "-v-
-let s:literal_text = {
-    \ 'capture_count' : 1,
-    \ 'pattern'       : '\([^%]\+\)',
-    \ 'callback'      : 's:AppendString(s:match_list[1])',
-    \ }
+function! s:FillWhitespace(text_to_change, text_to_repeat) "-v-
+	let l:text_to_change = a:text_to_change
+	
+	" Dashes in the indentation
+	let l:text_to_change = substitute(
+	    \ l:text_to_change,
+	    \ '^[ ]\+',
+	    \ '\=s:FillSpaceWithString( a:text_to_repeat, strlen(submatch(0)) - 1 ) . " " ',
+	    \ 'e')
+	
+	" fill fairly wide whitespace regions
+	let l:text_to_change = substitute(
+	    \ l:text_to_change,
+	    \ ' \([ ]\{3,}\) ',
+	    \ '\=" " . s:FillSpaceWithString( a:text_to_repeat, strlen(submatch(1))) . " " ',
+	    \ 'g')
+	
+	return l:text_to_change
+endfunction "-^-
 
-let s:escaped_percent = {
-    \ 'capture_count' : 0,
-    \ 'pattern'       : '%%',
-    \ 'callback'      : 's:AppendString("%")',
-    \ }
+"│-v-1 │ Main functionality
+"└─────┴────────────────────
 
-let s:text_of_line = {
-    \ 'capture_count' : 0,
-    \ 'pattern'       : '\C%c',
-    \ 'callback'      : 's:AppendString([''l:line1_text''])',
-    \ }
-
-let s:filled_text_of_line = {
-    \ 'capture_count' : 0,
-    \ 'pattern'       : '\C%C',
-    \ 'callback'      : 's:AppendString([''s:FillWhitespace(l:line1_text)''])',
-    \ }
-
-" Where the right begins and is able to overlap the left, if the line's too big.
-let s:split_mark = {
-    \ 'capture_count' : 0,
-    \ 'pattern'       : '%<',
-    \ 'callback'      : 's:MarkSplit()',
-    \ }
-
-" Where the fill string fills, if the line's too short.
-let s:fill_mark = {
-    \ 'capture_count' : 1,
-    \ 'pattern'       : '%f{\([^}]*\)}',
-    \ 'callback'      : 's:MarkFill(s:match_list[1])',
-    \ }
-
-" Are these next two callbacks confusing enough for you? The idea is they need
-" the s:match_list[1] value at the time of parsing. They're appended as lists
-" of 1 member so they become compile-time callbacks (i.e., a list of string(s)
-" is executed later). So part is a parse-time callback, and part is compile
-" time.
-"
-" It's just hard to format it correctly here.
-let s:formatted_line_count = {
-    \ 'capture_count' : 1,
-    \ 'pattern'       : '%\(\d*\)n',
-    \ 'callback'      : 's:AppendString([''printf("%'' . s:match_list[1] . ''s", s:lines_count)''])',
-    \ }
-
-" Repeated string representing fold level (repeated v:foldlevel - 1 times)
-let s:fold_level_indent = {
-    \ 'capture_count' : 1,
-    \ 'pattern'       : '%l{\([^}]*\)}',
-    \ 'callback'      : 's:AppendString([''repeat("'' . s:match_list[1] .  ''", v:foldlevel - 1)''])',
-    \ }
-
-
-" Order of this list shouldn't matter unless there's deliberate pattern
-" collision. There isn't. Still, it'll be slightly faster the one time it runs
-" if the more common patterns are listed first.
-let s:parse_data = [ s:literal_text, s:escaped_percent, s:text_of_line,
-    \ s:filled_text_of_line, s:split_mark, s:fill_mark, s:formatted_line_count,
-    \ s:fold_level_indent]
-"-^-
-
+let s:done_parsing = 0
 function! spiffy_foldtext#SpiffyFoldText() "-v-
 	if !s:done_parsing
-		call s:ParseFormatString(g:spf_txt.format)
+		call s:ParseFormatString(g:SpiffyFoldtext_format)
 	endif
 	
 	return s:CompileFormatString(s:parsed_string)
 endfunction "-^-
+  "│-v-2 │ Used by spiffy_foldtext#SpiffyFoldText()
+  "└─────┴──────────────────────────────────────────
 
 function! s:ParseFormatString(...) "-v-
 	let s:parsed_string = [""]
@@ -121,14 +142,14 @@ function! s:ParseFormatString(...) "-v-
 		let l:nomatch = 1
 		for l:parse_datum in s:parse_data
 			let l:full_pattern = '^' . l:parse_datum.pattern . '\(.*\)$'
-			let s:match_list = matchlist(l:still_to_parse, l:full_pattern)
+			let l:match_list = matchlist(l:still_to_parse, l:full_pattern)
 			
-			if len(s:match_list) != 0
+			if len(l:match_list) != 0
 				let l:nomatch = 0
 				
 				exe 'call ' . l:parse_datum.callback
 				
-				let l:still_to_parse = s:match_list[l:parse_datum.capture_count + 1]
+				let l:still_to_parse = l:match_list[l:parse_datum.capture_count + 1]
 				break
 			endif
 		endfor
@@ -148,10 +169,29 @@ function! s:ParseFormatString(...) "-v-
 endfunction "-^-
 
 function! s:CompileFormatString(...) "-v-
-	let l:line1_text = spiffy_foldtext#CorrectlySpacify(getline(v:foldstart))
-	let s:lines_count = v:foldend - v:foldstart + 1
 	
+	let l:callbacked_string = s:ExecuteCallbacks()
+	let l:actual_winwidth = spiffy_foldtext#ActualWinwidth()
+	let l:length_so_far = s:LengthOfListsStrings(l:callbacked_string)
+	
+	if l:length_so_far > l:actual_winwidth
+		let l:return_val = s:ConstrainTooLong(l:callbacked_string, l:actual_winwidth)
+	else
+		let l:return_val = s:StretchTooShort(l:callbacked_string, l:actual_winwidth)
+	endif
+	
+	return return_val
+endfunction "-^-
+    "│-v-3 │ Used by s:CompileFormatString()
+    "└─────┴─────────────────────────────────
+
+function! s:ExecuteCallbacks() "-v-
 	let l:callbacked_string = [""]
+	
+	" Used by the callbacks
+	let l:line1_text = spiffy_foldtext#CorrectlySpacify(getline(v:foldstart))
+	let l:lines_count = v:foldend - v:foldstart + 1
+	
 	let l:element = ''
 	for i in range(len(s:parsed_string))
 		unlet l:element
@@ -166,61 +206,7 @@ function! s:CompileFormatString(...) "-v-
 		endif
 	endfor
 	
-	let l:actual_winwidth = spiffy_foldtext#ActualWinwidth()
-	let l:length_so_far = s:LengthOfListsStrings(l:callbacked_string)
-	if l:length_so_far > l:actual_winwidth
-		let l:before_split = ""
-		let l:after_split = ""
-		let l:is_before_split = 1
-		let element = ""
-		for i in range(len(l:callbacked_string))
-			unlet element
-			let element = l:callbacked_string[i]
-			if type(element) == type("")
-				if l:is_before_split
-					let l:before_split .= element
-				else
-					let l:after_split .= element
-				endif
-			elseif type(element) == type({}) && element.mark == 'split'
-				let l:is_before_split = 0
-			endif
-		endfor
-		
-		let l:room_for_before = l:actual_winwidth - strdisplaywidth(l:after_split)
-		let l:before_split = s:KeepLength(l:before_split, l:room_for_before)
-		
-		let l:return_val = l:before_split . l:after_split
-	else
-		let l:before_fill = ""
-		let l:after_fill = ""
-		let l:fill_string = "-"
-		let l:is_before_fill = 1
-		for i in range(len(l:callbacked_string))
-			unlet element
-			let element = l:callbacked_string[i]
-			if type(element) == type("")
-				if l:is_before_fill
-					let l:before_fill .= element
-				else
-					let l:after_fill .= element
-				endif
-			elseif type(element) == type({}) && element.mark == 'fill'
-				let l:is_before_fill = 0
-				let l:fill_string = element.fill_string
-			endif
-		endfor
-		
-		let l:room_for_fill = l:actual_winwidth - (strdisplaywidth(l:before_fill) + strdisplaywidth(l:after_fill))
-		let l:whole_num_repeat = l:room_for_fill / strdisplaywidth(l:fill_string)
-		let l:frac_part_repeat = l:room_for_fill % strdisplaywidth(l:fill_string)
-		
-		let l:fill = repeat(l:fill_string, l:whole_num_repeat)
-		let l:fill .= s:KeepLength(l:fill_string, l:frac_part_repeat)
-		
-		let l:return_val = l:before_fill . l:fill . l:after_fill
-	endif
-	return return_val
+	return l:callbacked_string
 endfunction "-^-
 
 function! s:LengthOfListsStrings(...) "-v-
@@ -236,25 +222,69 @@ function! s:LengthOfListsStrings(...) "-v-
 	return l:return_val
 endfunction "-^-
 
-function! s:FillWhitespace(...) "-v-
-	let l:text_to_change = a:1
+function! s:ConstrainTooLong(callbacked_string, actual_winwidth) "-v-
+	" This function is highly specific to the format of the list variable
+	" callbacked_string.
+	let l:before_split = ""
+	let l:after_split = ""
+	let l:is_before_split = 1
+	let element = ""
+	for i in range(len(a:callbacked_string))
+		unlet element
+		let element = a:callbacked_string[i]
+		if type(element) == type("")
+			if l:is_before_split
+				let l:before_split .= element
+			else
+				let l:after_split .= element
+			endif
+		elseif type(element) == type({}) && element.mark == 'split'
+			let l:is_before_split = 0
+		endif
+	endfor
 	
-	" Dashes in the indentation
-	let l:text_to_change = substitute(
-	    \ l:text_to_change,
-	    \ '^[ ]\+',
-	    \ '\=repeat( g:spf_txt.fillchar, strlen(submatch(0)) - 1 ) . " " ',
-	    \ 'e')
+	let l:room_for_before = a:actual_winwidth - strdisplaywidth(l:after_split)
+	let l:before_split = s:KeepLength(l:before_split, l:room_for_before)
 	
-	" fill fairly wide whitespace regions
-	let l:text_to_change = substitute(
-	    \ l:text_to_change,
-	    \ ' \([ ]\{3,}\) ',
-	    \ '\=" " . repeat(g:spf_txt.fillchar, strlen(submatch(1))) . " " ',
-	    \ 'g')
-	
-	return l:text_to_change
+	return l:before_split . l:after_split
 endfunction "-^-
+
+function! s:StretchTooShort(callbacked_string, actual_winwidth) "-v-
+	" This function is highly specific to the format of the list variable
+	" callbacked_string.
+	let l:before_fill = ""
+	let l:after_fill = ""
+	let l:fill_string = "-"
+	let l:is_before_fill = 1
+	for i in range(len(a:callbacked_string))
+		unlet element
+		let element = a:callbacked_string[i]
+		if type(element) == type("")
+			if l:is_before_fill
+				let l:before_fill .= element
+			else
+				let l:after_fill .= element
+			endif
+		elseif type(element) == type({}) && element.mark == 'fill'
+			let l:is_before_fill = 0
+			let l:fill_string = element.fill_string
+		endif
+	endfor
+	
+	let l:room_for_fill = a:actual_winwidth - (strdisplaywidth(l:before_fill) + strdisplaywidth(l:after_fill))
+	let l:fill = s:FillSpaceWithString(l:fill_string, l:room_for_fill)
+	
+	return l:before_fill . l:fill . l:after_fill
+endfunction "-^-
+
+    "┌─────┬─────────────────────────────────
+    "│-^-3 │ Used by s:CompileFormatString()
+
+  "┌─────┬──────────────────────────────────────────
+  "│-^-2 │ Used by spiffy_foldtext#SpiffyFoldText()
+
+"│-v-1 │ Used by multiple Functions
+"└─────┴────────────────────────────
 
 function! s:KeepLength(the_string, space_available) "-v-
 	" Gradual arrival at the right value, due to multibytes.
@@ -275,12 +305,53 @@ function! s:KeepLength(the_string, space_available) "-v-
 	return strpart(a:the_string, 0, l:kept_length)
 endfunction "-^-
 
+function! s:FillSpaceWithString(the_string, available_dispwidth) "-v-
+	let l:whole_num_repeat = a:available_dispwidth / strdisplaywidth(a:the_string)
+	let l:frac_part_repeat = a:available_dispwidth % strdisplaywidth(a:the_string)
+	
+	let l:return_val = repeat(a:the_string, l:whole_num_repeat)
+	let l:return_val .= s:KeepLength(a:the_string, l:frac_part_repeat)
+	return l:return_val
+endfunction "-^-
+
+"│-v-1 │ Generally useful functions
+"└─────┴────────────────────────────
+
+function! spiffy_foldtext#CorrectlySpacify(...) "-v-
+	" For converting tabs into spaces in such a way that the line is displayed
+	" exactly as it would with tabs.
+	
+	let l:running_result = a:1
+	let l:done = 0
+	while !l:done
+		" Replace first tab & everything after with nothing.
+		let l:up_to_tab = substitute(l:running_result, '\t.*$', '', 'e')
+		
+		if l:running_result =~# '\t'
+			let l:first_tab_col = strdisplaywidth(l:up_to_tab)
+			let l:first_tab_dw = strdisplaywidth("\t", l:first_tab_col)
+			
+			let l:running_result = substitute(
+			      \ l:running_result,
+			      \ '\t',
+			      \ repeat(' ', l:first_tab_dw),
+			      \ 'e' )
+		else
+			let l:done = 1
+		endif
+	endwhile
+	
+	return l:running_result
+endfunction "-^-
+
 function! spiffy_foldtext#ActualWinwidth() "-v-
 	" Finds the display width of that section of the window that actually shows
 	" content.
 	
 	return winwidth(0) - s:NumberColumnWidth() - &foldcolumn - s:SignsWidth()
 endfunction "-^-
+  "│-v-2 │ Used by spiffy_foldtext#ActualWinwidth()
+  "└─────┴──────────────────────────────────────────
 
 function! s:NumberColumnWidth() "-v-
 	let l:number_col_width = 0
@@ -321,32 +392,9 @@ function! s:SignsWidth() "-v-
 	return l:signs_width
 endfunction "-^-
 
-function! spiffy_foldtext#CorrectlySpacify(...) "-v-
-	" For converting tabs into spaces in such a way that the line is displayed
-	" exactly as it would with tabs.
-	
-	let l:running_result = a:1
-	let l:done = 0
-	while !l:done
-		" Replace first tab & everything after with nothing.
-		let l:up_to_tab = substitute(l:running_result, '\t.*$', '', 'e')
-		
-		if l:running_result =~# '\t'
-			let l:first_tab_col = strdisplaywidth(l:up_to_tab)
-			let l:first_tab_dw = strdisplaywidth("\t", l:first_tab_col)
-			
-			let l:running_result = substitute(
-			      \ l:running_result,
-			      \ '\t',
-			      \ repeat(' ', l:first_tab_dw),
-			      \ 'e' )
-		else
-			let l:done = 1
-		endif
-	endwhile
-	
-	return l:running_result
-endfunction "-^-
+  "┌─────┬──────────────────────────────────────────
+  "│-^-2 │ Used by spiffy_foldtext#ActualWinwidth()
 
+" -v-1 modeline
 " vim: set fmr=-v-,-^- fdm=marker list noet ts=4 sw=4 sts=4 :
 
