@@ -14,22 +14,26 @@ For most vim versions, tested in 7.4. Help file last change: 2014-04-09
 CONTENTS                                            *spiffy_foldtext-contents*
     1. Intro                        |spiffy_foldtext|
     2. The format string            |spiffy_foldtext-format_string|
-       - use_multibyte              |spiffy_foldtext-use_multibyte|
+       - %%                         |spiffy_foldtext-%%|
+       - %c  OR  %c{[fill string]}  |spiffy_foldtext-%c|
+       - %<                         |spiffy_foldtext-%<|
+       - %f{[fill string]}          |spiffy_foldtext-%f{}|
+       - %[some number]n            |spiffy_foldtext-%n|
+       - %l{[repeated string]}      |spiffy_foldtext-%l{}|
     3. Other Options                |spiffy_foldtext-options|
        - use_multibyte              |spiffy_foldtext-use_multibyte|
-    4. Example                      |spiffy_foldtext-example|
-    5. License                      |spiffy_foldtext-license|
+    4. Planned Features             |spiffy_foldtext-planned_features|
+    5. Suggestions?                 |spiffy_foldtext-suggestions|
+    6. License                      |spiffy_foldtext-license|
 
 ==============================================================================
 
 INTRODUCTION                                                 *spiffy_foldtext*
 
-WARNING: THIS HELP FILE IS UNDER CONSTRUCTION.
-
 A customizable foldtext function that properly takes into account the actual
-width of the displayable area of your windows. Meta information about the fold
-(e.g. line count, fold level) is thus able to be right-justified, leaving as
-much of the first line of the fold visible as possible.
+width of the displayable area of your windows. You are thus able to
+right-justify a portion of it, usually meta-data like line count and fold
+level.
 
 At the center of the plugin is a special format string. By customizing its
 value, you can create your own custom foldtext in a single line in your vimrc.
@@ -49,19 +53,16 @@ The format string is customizable by setting the dictionary entry
 The format string contains control triggers and literal text describing how
 your folded lines will render. For example, here's the default (more or less):
 >
-    let g:spf_txt = {}
-
     if has('multi_byte')
-        let g:spf_txt.format = "%c{═}  %<%f{═}╡ %4n lines ╞═%l{╤═}"
+        let g:SpiffyFoldtext_format = "%c{═}  %<%f{═}╡ %4n lines ╞═%l{╤═}"
     else
-        let g:spf_txt.format = "%c{=}  %<%f{=}| %4n lines |=%l{/=}"
+        let g:SpiffyFoldtext_format = "%c{=}  %<%f{=}| %4n lines |=%l{/=}"
     endif
 <
 Or, more simply (I'll take the ascii-only version for the sake of
 explanation):
 >
-    let g:spf_txt = {}
-    let g:spf_txt.format = "%c{=}  %<%f{=}| %4n lines |=%l{/=}"
+    let g:SpiffyFoldtext_format = "%c{=}  %<%f{=}| %4n lines |=%l{/=}"
 <
 The plugin parses this string upon first run, then 'compiles' it to your
 foldtext each time vim needs to determine what to display on a line that
@@ -99,132 +100,168 @@ this help for more information on the rest:
            foldtext and what will be right aligned. The leftward angle bracket
            is meant as a mnemonic to indicate that, should all the contents of
            the foldtext be too wide for the display area, the content to the
-           right of this trigger will overwrite the content to the left
+           right of this trigger will overwrite part of the content to the
+           left. See |spiffy_foldtext-%<|.
 
   "%f{=}": If the content of the foldtext doesn't fill up the entire display
            region, the foldtext will be filled with '='s at this point, to the
-           amount needed to right-align the right-align section.
+           amount needed to right-align the right-align section. See
+           |spiffy_foldtext-%f{}|.
+
+  etc.
 
 ------------------------------------------------------------------------------
-OPTIONS                                              *spiffy_foldtext-options*
+FORMAT STRING TRIGGERS                              *spiffy_foldtext-triggers*
 
-All spiffy-foldtext options are contained in the g:spf_txt dictionary. To make
-changes away from the default, create the dictionary with a line in your vimrc
-like this:
+The format string consists of two types of things: literal text inserted
+exactly as it appears in the actual format string variable; and triggers
+beginning with the '%' character. Please note that, for simplicity's sake,
+your custom values for the format string are NOT checked for correctness. A
+badly formed format string won't break your vim session, though, or even
+return any sort of error message, it might just make your fold lines a little
+funny.
+
+If you're trying to test whether a format string is working properly, make
+sure to check what it looks like both when it's too long for the line (some of
+it will overlap the rest, as designed), and when it's too short (the %f{}
+trigger will expand to fill the excess space).
+
+
+%%                                                        *spiffy_foldtext-%%*
+
+	Placing two '%' characters will insert one '%' into your final fold
+	text.
+
+
+%c  OR  %c{[fill string]}          *spiffy_foldtext-%c* *spiffy_foldtext-%c{}*
+
+	Places the text of the fold region's first line into your foldtext. If
+	wavy brackets are included, its contents are used to fill in the
+	line's indentation and any wide areas of whitespace. If the fill
+	string's width is not an exact factor of the available space's width,
+	part of the fill string is used at the end.
+
+
+%<                                                        *spiffy_foldtext-%<*
+
+	This represents the split between what will be left-aligned in your
+	foldtext and what will be right aligned when the fold text is wider
+	than the display width of the window. The leftward angle bracket is
+	meant as a mnemonic to indicate that, should all the contents of the
+	foldtext be too wide for the display area, the content to the right of
+	this trigger will overwrite part of the content to the left.
+
+
+%f{[fill string]}                                       *spiffy_foldtext-%f{}*
+
+	If the rest of the fold text works out to being less wide than the
+	display area of the window, the text in the wavy brackets is repeated
+	until it makes up for the extra space. In effect, everything to the
+	right of it is right-aligned (in the case of a foldtext shorter than
+	the display width). If the fill string's width is not an exact factor
+	of the available space's width, part of the fill string is used at the
+	end.
+
+
+%[some number]n                                           *spiffy_foldtext-%n*
+
+	Inserts the number of lines in the folded region as a decimal number.
+	The number you give before the 'n' indicates a minimum number of
+	display cells to fill.
+
+
+%l{[repeated string]}                                   *spiffy_foldtext-%l{}*
+
+	Inserts a string, repeated n times--where n is the fold level of the
+	fold, minus 1. Placing it in the right-align region, in effect, let's
+	you do a sort of 'reverse indent' indicator of the fold's fold level.
+	You can, of course, place this anywhere you like in the string. For
+	example, to get something close to Vim's default fold text, you could
+	use the following format string:
 >
-	let g:spf_txt = {}
+	"+-%l{-} %3n lines: %c"
 <
-and populate it with lines similar to these:
->
-	let g:spf_txt.a_string_setting = has('multi_byte') ? '─' : '-'
 
-	" if you don't care about multi-bytes:
-	let g:spf_txt.a_string_setting = '-'
-
-	let g:spf_txt.a_boolean_setting = 0
-<
-(Or, y'know, just populate the dictionary with whatever syntax you want.)
-
-In the above examples, the name of the setting is what follows the period. The
-plugin populates the defaults in after you've filled in your own values,
-without overriding them.
+------------------------------------------------------------------------------
+OTHER OPTIONS                                        *spiffy_foldtext-options*
 
 The example code below shows the defaults.
 
                                                *spiffy_foldtext-use_multibyte*
 >
- let g:spf_txt.use_multibyte = 1
+ :let g:SpiffyFoldtext_use_multibyte = 1
 <    (boolean)
-		Whether to use the default multibyte characters & strings when
-		your vim session supports it. Note that this only affects
-		defaults. Setting your own values as multibytes will still
-		attempt to display them as you have set them, no matter what
-		value you give to g:spf_txt.use_multibyte.
 
-
-                                                    *spiffy_foldtext-fillchar*
->
- let g:spf_txt.fillchar = has('multi_byte') ? '═' : '='
-<    (char)
-		The character used to fill much of the foldtext.
-
-
-                                             *spiffy_foldtext-fill_whitespace*
->
- let g:spf_txt.fill_whitespace = 1
-<    (boolean)
-		Whether or not to fill large areas of whitespace with the
-		contents of g:spf_txt.fillchar . Having this on helps you to
-		see folds even when the only other indication is far off on
-		the right side of your window.
-
-
-                                            *spiffy_foldtext-foldlevel_indent*
->
- let g:spf_txt.foldlevel_indent = has('multi_byte') ? '╤═' : '/='
-<    (string)
-		The string used when indenting from the right side of the
-		window [fold-level] times, except for the leftmost occurence.
-		Another sensible value might be '══' or '=='. Any length
-		string is allowed (including 0), but maybe try to be sensible
-		about it.
-
-
-                                    *spiffy_foldtext-foldlevel_indent_leftest*
->
- let g:spf_txt.foldlevel_indent_leftest = has('multi_byte') ? ' ╞═' : ' |='
-<    (string)
-		The string used for the leftmost fold-level indicator (note
-		the extra space for padding in the default). This is always
-		drawn at least once. Any length string is allowed (including
-		0), but maybe make it the same length as foldlevel_indent,
-		plus whatever whitespace padding-space you may want.
-
-
-                                           *spiffy_foldtext-left_of_linecount*
->
- let g:spf_txt.left_of_linecount = has('multi_byte') ? '╡ ' : '| '
-<    (string)
-		The string that appears to the left of the line count. Note
-		the extra space for padding in the default. The left side will
-		directly touch a section of repeated fillchars, so there's no
-		need to put your fillchar there unless you want it to always
-		appear in particularly cramped situations.
-
-
-                                                   *spiffy_foldtext-rightmost*
->
- let g:spf_txt.rightmost = ''
-<    (string)
-		The string that appears rightmost of all, directly touching
-		the right border of the window. The default is an empty
-		string, but something like, say, the same character as your
-		fillchar might make sense in some situations (like if a level
-		1 fold looks too squished up to the right side to you).
+	Whether to use the default multi-byte format string, when possible.
+	Note thath this only affects the default. Setting your own values as
+	multibytes will still attempt to display them as you have set them, no
+	matter what value you give to g:SpiffyFoldtext_use_multibyte.
 
 ------------------------------------------------------------------------------
+PLANNED FEATURES                            *spiffy_foldtext-planned_features*
 
-EXAMPLE                                              *spiffy_foldtext-example*
+I've finally gotten this plugin to a point where I feel good releasing it, but
+I still have some features I might want to add later:
 
-Here's a bit of an example of how you might change the settings in your own
-vimrc: >
-	if has('multi_byte')
-	    let g:spf_txt = { 'fillchar'                 : '─',
-	                    \ 'foldlevel_indent'         : '──',
-	                    \ 'foldlevel_indent_leftest' : '├─',
-	                    \ 'left_of_linecount'        : '┤',
-	                    \ 'rightmost'                : '─'   }
-	else
-	    let g:spf_txt = { 'fillchar'                 : '-',
-	                    \ 'foldlevel_indent'         : '--',
-	                    \ 'foldlevel_indent_leftest' : '|-',
-	                    \ 'left_of_linecount'        : '|',
-	                    \ 'rightmost'                : '-'   }
-	endif
-<
-You can yank and put this directly into your vimrc if you'd like to try it, or
-even just one of the two conditional sections if you don't care about the
-other.
+	- A special case format string for regions that encompass the insides
+	  of a bracket. It would replace it with {...}, or (...), etc.
+
+
+There's also a feature I kinda want to add, but it might be outside the scope
+of this plugin. Except, if it were to be done in a way compatible with this
+plugin, it would pretty much have to be _part_ of it, anyway.
+
+	- Placing a '!', followed by a number, immediately after a fold
+	  marker, would change the %c trigger to display the line that many
+	  down from the top one, so >
+          {{{1!1
+              The next line.
+          }}}
+<         would look something like this:
+          === The next line.  =============|    3 lines |=~
+
+If you feel entusiastic about any of the above planned features, let me know.
+I'll get cracking on it sooner.
+
+
+There are some features I feel less strongly about, but if enough people want
+them, or if they want to add them themselves, they may be added in the future:
+
+	- A "%>" trigger to correspond with the "%<" trigger.
+
+	- Closer emulation of Vim's default treatment of the first line's
+	  text, where comment delimiters and fold markers are removed.
+
+
+If you want to contribute, the main repository is found at:
+https://bitbucket.org/atimholt/spiffy_foldtext
+
+
+------------------------------------------------------------------------------
+SUGGESTIONS                                      *spiffy_foldtext-suggestions*
+
+Got any good ideas I didn't come up with? send me an email at
+atimholt@gmail.com.
+
+I'd obfuscate my email address, but it's plaintext in the license, and gmail
+has real good spam filters, so eh.
+
+If you feel REALLY enthusiastic about any of the above planned or speculative
+features, try contributing some code at:
+https://bitbucket.org/atimholt/spiffy_foldtext
+But please contact me first if it's anything outside that list of features "I
+feel less strongly about". Also, please don't be offended if I don't accept,
+or if I heavily modify, your contributions. I don't want this thing to get to
+bloated, or to contradict its own purpose, or whatever have you.
+
+or even giving me money:
+bitcoin:1FGQqbjSGHrQVeUc12LJY6F2g1TEDyJ7Ts
+and make sure to let me know who sent it and why!
+
+I'm not a lawyer, but let me try to make a disclaimer: Any money sent to me is
+not a charitable donation, it does not guarantee work, and I'll be doing
+whatever I want with it. Please don't feel the need to send me any large sums,
+this is just a simple little plugin. Doesn't hurt to ask, though, eh?
 
 ------------------------------------------------------------------------------
 LICENSE                                              *spiffy_foldtext-license*
@@ -253,4 +290,4 @@ SOFTWARE.
 
 ------------------------------------------------------------------------------
 
- vim:tw=78:ts=8:sts=8:noet:ft=help:norl:
+ vim:fmr=-v-,-^-:tw=78:ts=8:sts=8:noet:ft=help:norl:
