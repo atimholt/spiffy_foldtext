@@ -1,5 +1,5 @@
-*spiffy_foldtext.txt*  Spiffy, intelligent foldtext
-For most vim versions, tested in 7.4. Help file last change: 2014-04-09
+*spiffy_foldtext.txt*  Spiffy, intelligent foldtext via a format string.
+For most modern vim versions--tested in 7.4.
 
 ------------------------------------------------------------------------------
 
