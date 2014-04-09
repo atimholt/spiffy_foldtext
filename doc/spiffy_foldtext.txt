@@ -49,9 +49,10 @@ relevant if you've actually got multi-byte characters enabled.
 ------------------------------------------------------------------------------
 THE FORMAT STRING                              *spiffy_foldtext-format_string*
 
-The format string is customizable by setting the dictionary entry
-The format string contains control triggers and literal text describing how
-your folded lines will render. For example, here's the default (more or less):
+The format string is customizable by setting the g:SpiffyFoldtext_format
+variable. The format string contains control triggers and literal text
+describing how your folded lines will render. For example, here's the default
+(more or less):
 >
     if has('multi_byte')
         let g:SpiffyFoldtext_format = "%c{═}  %<%f{═}╡ %4n lines ╞═%l{╤═}"
