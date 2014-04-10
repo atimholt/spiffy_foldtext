@@ -5,3 +5,6 @@ Refactor
   decouple used values from values/functions only available at run time.
 Special-case foldtext:
   v:foldstart ends in open bracket, v:foldend start with closer
+New triggers:
+  a v:foldlevel trigger (request from reddit)
+Determine best right-column limiter method.
