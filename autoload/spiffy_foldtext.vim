@@ -69,11 +69,17 @@ let s:fold_level_indent = {
     \ 'callback'      : 's:AppendString([''repeat("'' . l:match_list[1] .  ''", v:foldlevel - 1)''])',
     \ }
 
+let s:formatted_level_count = {
+    \ 'capture_count' : 1,
+    \ 'pattern'       : '%\(\d*\)fl',
+    \ 'callback'      : 's:AppendString([''printf("%'' . l:match_list[1] . ''s", v:foldlevel)''])',
+    \ }
+
 
 " There is deliberate pattern collision. The order matters.
 let s:parse_data = [ s:literal_text, s:escaped_percent, s:filled_text_of_line,
     \ s:text_of_line, s:split_mark, s:fill_mark, s:formatted_line_count,
-    \ s:fold_level_indent]
+    \ s:fold_level_indent, s:formatted_level_count]
 
   "│-v-2 │ s:parse_data callback functions
   "└─────┴─────────────────────────────────

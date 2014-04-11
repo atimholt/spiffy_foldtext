@@ -183,6 +183,12 @@ trigger will expand to fill the excess space).
 	"+-%l{-} %3n lines: %c"
 <
 
+%[some number]fl                                       *spiffy_foldtext-%fl{}*
+
+	Inserts the fold level of the fold as a decimal number. The number you
+	give before the 'n' indicates a minimum number of display cells to
+	fill.
+
 ------------------------------------------------------------------------------
 OTHER OPTIONS                                        *spiffy_foldtext-options*
 
