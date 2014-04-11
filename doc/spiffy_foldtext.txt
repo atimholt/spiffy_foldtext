@@ -20,6 +20,7 @@ CONTENTS                                            *spiffy_foldtext-contents*
        - %f{[fill string]}          |spiffy_foldtext-%f{}|
        - %[some number]n            |spiffy_foldtext-%n|
        - %l{[repeated string]}      |spiffy_foldtext-%l{}|
+       - %[some number]fl           |spiffy_foldtext-%fl|
     3. Other Options                |spiffy_foldtext-options|
        - use_multibyte              |spiffy_foldtext-use_multibyte|
     4. Planned Features             |spiffy_foldtext-planned_features|
@@ -183,7 +184,7 @@ trigger will expand to fill the excess space).
 	"+-%l{-} %3n lines: %c"
 <
 
-%[some number]fl                                       *spiffy_foldtext-%fl{}*
+%[some number]fl                                         *spiffy_foldtext-%fl*
 
 	Inserts the fold level of the fold as a decimal number. The number you
 	give before the 'n' indicates a minimum number of display cells to
