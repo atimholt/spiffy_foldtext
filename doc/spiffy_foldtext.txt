@@ -25,7 +25,8 @@ CONTENTS                                            *spiffy_foldtext-contents*
        - use_multibyte              |spiffy_foldtext-use_multibyte|
     4. Planned Features             |spiffy_foldtext-planned_features|
     5. Suggestions?                 |spiffy_foldtext-suggestions|
-    6. License                      |spiffy_foldtext-license|
+    6. Change Log                   |spiffy_foldtext-change_log|
+    7. License                      |spiffy_foldtext-license|
 
 ==============================================================================
 
@@ -271,6 +272,15 @@ I'm not a lawyer, but let me try to make a disclaimer: Any money sent to me is
 not a charitable donation, it does not guarantee work, and I'll be doing
 whatever I want with it. Please don't feel the need to send me any large sums,
 this is just a simple little plugin. Doesn't hurt to ask, though, eh?
+
+------------------------------------------------------------------------------
+CHANGE LOG                                        *spiffy_foldtext-change_log*
+
+1.1:
+  - RELEASE PENDING
+  - Added %[some number]fl trigger, inserting fold level
+1.0:
+  - initial release
 
 ------------------------------------------------------------------------------
 LICENSE                                              *spiffy_foldtext-license*
