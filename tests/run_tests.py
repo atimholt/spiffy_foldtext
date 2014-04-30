@@ -4,25 +4,12 @@ import tempfile
 import os
 import subprocess
 
-simple_vimrc_contents = """
-	set nocompatible
-	syntax on
-	
-	for dep in ['vader.vim', 'vim-repeat']
-	execute 'set rtp+=' . finddir(dep, expand('~/.vim').'/**')
-	endfor
-	set rtp+=$SOURCE
-	"""
+project_path = os.path.join(os.path.dirname(__file__), '../')
+project_path = os.path.abspath(project_path)
+print(project_path)
 
-with tempfile.NamedTemporaryFile(mode='w', encoding='utf-8') as simple_vimrc:
-	simple_vimrc.write(simple_vimrc_contents)
-	#print(simple_vimrc_contents)
-	
-	#print(subprocess.check_output(['python', '-c', "\"print('hi')\""]))
-	output = subprocess.check_output(
-	        ['vim', '-u', simple_vimrc.name, '+Vader*'],
-	        stderr=subprocess.STDOUT,
-	        shell=True)
-	print(output)
+simple_vimrc = os.path.join(os.path.dirname(__file__), 'simple_vimrc.vim')
+
+subprocess.call(['vim', '-u', simple_vimrc, '+Vader*'])
 
 # vim: set noet ts=4 sts=4 sw=4 :
