@@ -13,7 +13,15 @@ Execute (Globally useful function definitions): ▼2
 
   function! BasicTeardown() "▼
     quit " Close vertical split
+
+    if exists('w:spiffy_format_string')
+      unlet w:spiffy_format_string
+    endif
+    if exists('b:spiffy_format_string')
+      unlet b:spiffy_format_string
+    endif
   endfunction "▲
+
 
 #│ ▼1 │ Basic Integration Tests
 #└────┴─────────────────────────
@@ -107,33 +115,75 @@ Execute (Escaped percent sign):
 
   AssertEqual "%---------", foldtextresult(1)
 
+Given (1st line has wide whitespace):
+      line      -v----
+  
+  -^-
 
 Execute (Filled Text of line):
-  Assert 0, "Write the tests"
+  let w:spiffy_format_string = "%c{ao}"
+  vertical resize 20
+  normal zM
+  AssertEqual "aoa line aoao -v----", foldtextresult(1)
 
 
 Execute (Text of line):
-  Assert 0, "Write the tests"
+  let w:spiffy_format_string = "%c"
+  vertical resize 20
+  normal zM
+  AssertEqual "    line      -v----", foldtextresult(1)
+
+
+Given (Basic 3 line fold): ▼2
+  Some buffer content -v-
+  
+  -^-
 
 
 Execute (Split Mark):
-  Assert 0, "Write the tests"
+  let w:spiffy_format_string = "0123456789%<0123456789"
+  vertical resize 15
+  normal zM
+  AssertEqual "012340123456789", foldtextresult(1)
 
 
 Execute (Fill Mark):
-  Assert 0, "Write the tests"
+  let w:spiffy_format_string = "0123%f{ao}0123"
+  vertical resize 15
+  normal zM
+  AssertEqual "0123aoaoaoa0123", foldtextresult(1)
 
 
 Execute (Formatted Line Count):
-  Assert 0, "Write the tests"
+  let w:spiffy_format_string = "a%5nb"
+  vertical resize 15
+  normal zM
+  AssertEqual "a    3b--------", foldtextresult(1)
+
+
+Given (Multiple Fold levels):
+  some text -v-
+  some more -v-
+  -^-
+  -^-
 
 
 Execute (Fold level indent):
-  Assert 0, "Write the tests"
+  let w:spiffy_format_string = "%l{ao}"
+  vertical resize 15
+  normal zM
+  AssertEqual "---------------", foldtextresult(1)
+  normal zR2Gzc
+  AssertEqual "ao-------------", foldtextresult(2)
 
 
 Execute (Formatted Level Count):
-  Assert 0, "Write the tests"
+  let w:spiffy_format_string = "%5fl"
+  vertical resize 15
+  normal zM
+  AssertEqual "    1----------", foldtextresult(1)
+  normal zR2Gzc
+  AssertEqual "    2----------", foldtextresult(2)
 
 
 # ▼1 modeline
