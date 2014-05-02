@@ -129,13 +129,21 @@ endfunction "-^-
 "│-v-1 │ Main functionality
 "└─────┴────────────────────
 
-let s:done_parsing = 0
+let s:parsed_dictionary = {}
 function! spiffy_foldtext#SpiffyFoldText() "-v-
-	if !s:done_parsing
-		call s:ParseFormatString(g:SpiffyFoldtext_format)
+	if exists('w:spiffy_format_string')
+		let l:string_to_use = w:spiffy_format_string
+	elseif exists('b:spiffy_format_string')
+		let l:string_to_use = b:spiffy_format_string
+	else
+		let l:string_to_use = g:SpiffyFoldtext_format
 	endif
 	
-	return s:CompileFormatString(s:parsed_string)
+	if !has_key(s:parsed_dictionary, l:string_to_use)
+		let s:parsed_dictionary[l:string_to_use] = s:ParseFormatString(l:string_to_use)
+	endif
+	
+	return s:CompileFormatString(s:parsed_dictionary[l:string_to_use])
 endfunction "-^-
   "│-v-2 │ Used by spiffy_foldtext#SpiffyFoldText()
   "└─────┴──────────────────────────────────────────

@@ -35,6 +35,45 @@ Execute (basic test): ▼2
   normal zM
   AssertEqual "Some buffer content -v-  ==========|    3 lines |=", foldtextresult(1)
 
+#│ ▼1 │ Features
+#└─┬──┴─┬────────
+#  │ ▼2 │ On-the-fly foldtext changing
+#  └────┴──────────────────────────────
+
+Before: ▼3
+  call BasicSetup()
+  vertical resize 25
+
+After: ▼3
+  call BasicTeardown()
+
+Given (Basic 3 line fold): ▼3
+  Some buffer content -v-
+  
+  -^-
+
+Execute (Change foldtext at runtime (buffer local)): ▼3
+  let b:spiffy_format_string = "buffer local value."
+  normal zRzM
+
+  AssertEqual "buffer local value.------", foldtextresult(1)
+
+
+Execute (Change foldtext at runtime (window local)): ▼3
+  let w:spiffy_format_string = "window local value."
+  normal zRzM
+
+  AssertEqual "window local value.------", foldtextresult(1)
+
+
+Execute (window local overrides buffer local): ▼3
+  let w:spiffy_format_string = "window local value."
+  let b:spiffy_format_string = "buffer local value."
+  normal zRzM
+
+  AssertEqual "window local value.------", foldtextresult(1)
+
+
 # ▼1 modeline
 # vim: set ts=2 sw=2 sts=2 et fdm=marker fmr=▼,▲ :
 
