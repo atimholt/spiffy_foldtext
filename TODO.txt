@@ -9,3 +9,5 @@ New triggers:
   elastic regions
 Per-buffer/window foldtext (dictionary?)
 unit tests
+Use one of these in a auto-vim.org packaging script:
+  https://docs.python.org/3.4/library/archiving.html
