@@ -1,14 +1,40 @@
-Given:
+# tests/autoload__spiffy_foldtext.vader
+
+#│ ▼1 │ Global setup
+#└────┴──────────────
+Execute (Globally useful function definitions): ▼2
+
+  function! BasicSetup() "▼
+    set foldmethod=marker
+    set foldmarker=-v-,-^-
+    50vsplit " A predictable width, important for this domain.
+  endfunction "▲
+
+  function! BasicTeardown() "▼
+    quit " Close vertical split
+  endfunction "▲
+
+#│ ▼1 │ Basic Integration Tests
+#└────┴─────────────────────────
+
+Given (Basic 3 line fold): ▼2
   Some buffer content -v-
   
   -^-
 
 Before:
-  set foldmethod=marker
-  set foldmarker=-v-,-^-
+  call BasicSetup()
 
-Execute:
-  Log winwidth(0)
-  Assert 0
+After:
+  call BasicTeardown()
 
-# vim: set ts=2 sw=2 sts=2 et :
+Execute (confirm testing assumptions): ▼2
+  AssertEqual 50, winwidth(0)
+
+Execute (basic test): ▼2
+  normal zM
+  AssertEqual "Some buffer content -v-  ==========|    3 lines |=", foldtextresult(1)
+
+# ▼1 modeline
+# vim: set ts=2 sw=2 sts=2 et fdm=marker fmr=▼,▲ :
+
