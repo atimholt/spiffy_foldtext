@@ -38,41 +38,73 @@ Execute (basic test): ▼2
 #│ ▼1 │ Features
 #└─┬──┴─┬────────
 #  │ ▼2 │ On-the-fly foldtext changing
-#  └────┴──────────────────────────────
+#  └─┬──┴─┬────────────────────────────
+#    │ ▼3 │ Common setup
+#    └────┴──────────────
 
-Before: ▼3
+Before:
   call BasicSetup()
   vertical resize 25
 
-After: ▼3
+After:
   call BasicTeardown()
 
-Given (Basic 3 line fold): ▼3
+Given (Basic 3 line fold):
   Some buffer content -v-
   
   -^-
 
-Execute (Change foldtext at runtime (buffer local)): ▼3
+#    │ ▼3 │ Tests
+#    └────┴───────
+
+Execute (Change foldtext at runtime (buffer local)):
   let b:spiffy_format_string = "buffer local value."
   normal zRzM
 
   AssertEqual "buffer local value.------", foldtextresult(1)
 
 
-Execute (Change foldtext at runtime (window local)): ▼3
+Execute (Change foldtext at runtime (window local)):
   let w:spiffy_format_string = "window local value."
   normal zRzM
 
   AssertEqual "window local value.------", foldtextresult(1)
 
 
-Execute (window local overrides buffer local): ▼3
+Execute (window local overrides buffer local):
   let w:spiffy_format_string = "window local value."
   let b:spiffy_format_string = "buffer local value."
   normal zRzM
 
   AssertEqual "window local value.------", foldtextresult(1)
 
+
+#  │ ▼2 │ Formatting Triggers
+#  └─┬──┴─┬───────────────────
+#    │ ▼3 │ Common setup
+#    └────┴──────────────
+
+Before:
+  call BasicSetup()
+  set winwidth=10
+  vertical resize 10
+
+After:
+  call BasicTeardown()
+
+Given (Basic 3 line fold):
+  Some buffer content -v-
+  
+  -^-
+
+#    │ ▼3 │ Tests
+#    └────┴───────
+      
+Execute (Escaped percent sign):
+  let w:spiffy_format_string = "%%"
+  normal zRzM
+
+  AssertEqual "%---------", foldtextresult(1)
 
 # ▼1 modeline
 # vim: set ts=2 sw=2 sts=2 et fdm=marker fmr=▼,▲ :
