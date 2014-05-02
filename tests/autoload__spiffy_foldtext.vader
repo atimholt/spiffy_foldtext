@@ -7,6 +7,7 @@ Execute (Globally useful function definitions): ▼2
   function! BasicSetup() "▼
     set foldmethod=marker
     set foldmarker=-v-,-^-
+    silent only " Failed tests don’t run the After block.
     50vsplit " A predictable width, important for this domain.
   endfunction "▲
 
@@ -99,12 +100,41 @@ Given (Basic 3 line fold):
 
 #    │ ▼3 │ Tests
 #    └────┴───────
-      
+
 Execute (Escaped percent sign):
   let w:spiffy_format_string = "%%"
   normal zRzM
 
   AssertEqual "%---------", foldtextresult(1)
+
+
+Execute (Filled Text of line):
+  Assert 0, "Write the tests"
+
+
+Execute (Text of line):
+  Assert 0, "Write the tests"
+
+
+Execute (Split Mark):
+  Assert 0, "Write the tests"
+
+
+Execute (Fill Mark):
+  Assert 0, "Write the tests"
+
+
+Execute (Formatted Line Count):
+  Assert 0, "Write the tests"
+
+
+Execute (Fold level indent):
+  Assert 0, "Write the tests"
+
+
+Execute (Formatted Level Count):
+  Assert 0, "Write the tests"
+
 
 # ▼1 modeline
 # vim: set ts=2 sw=2 sts=2 et fdm=marker fmr=▼,▲ :
