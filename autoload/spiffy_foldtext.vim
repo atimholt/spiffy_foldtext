@@ -85,8 +85,8 @@ let s:parse_data = [ s:literal_text, s:escaped_percent, s:filled_text_of_line,
   "└─────┴─────────────────────────────────
 
 function! s:AppendString(...) "-v-
-	if type(a:1) == type("") && type(s:parsed_string[-1]) == type("")
-		let s:parsed_string[-1] .= a:1
+	if type(a:1) == type("") && type(s:ParsedString()[-1]) == type("")
+		let s:parsed_dictionary[s:StringToUse()][-1] .= a:1
 	else
 		" Should be a list with a single executable string as its only element
 		" (Or a string after such).
@@ -94,16 +94,16 @@ function! s:AppendString(...) "-v-
 		" Sticking it in an exe, on the right side of an assignment, MUST
 		" return a string!
 		" Funcrefs are inadequate here for various reasons.
-		let s:parsed_string += [a:1]
+		let s:parsed_dictionary[s:StringToUse()] += [a:1]
 	endif
 endfunction "-^-
 
 function! s:MarkSplit() "-v-
-	let s:parsed_string += [{'mark' : 'split'}]
+	let s:parsed_dictionary[s:StringToUse()] += [{'mark' : 'split'}]
 endfunction "-^-
 
 function! s:MarkFill(...) "-v-
-	let s:parsed_string += [{'mark' : 'fill', 'fill_string' : a:1}]
+	let s:parsed_dictionary[s:StringToUse()] += [{'mark' : 'fill', 'fill_string' : a:1}]
 endfunction "-^-
 
 function! s:FillWhitespace(text_to_change, text_to_repeat) "-v-
@@ -131,25 +131,13 @@ endfunction "-^-
 
 let s:parsed_dictionary = {}
 function! spiffy_foldtext#SpiffyFoldText() "-v-
-	if exists('w:spiffy_format_string')
-		let l:string_to_use = w:spiffy_format_string
-	elseif exists('b:spiffy_format_string')
-		let l:string_to_use = b:spiffy_format_string
-	else
-		let l:string_to_use = g:SpiffyFoldtext_format
-	endif
-	
-	if !has_key(s:parsed_dictionary, l:string_to_use)
-		let s:parsed_dictionary[l:string_to_use] = s:ParseFormatString(l:string_to_use)
-	endif
-	
-	return s:CompileFormatString(s:parsed_dictionary[l:string_to_use])
+	return s:CompileFormatString(s:ParsedString())
 endfunction "-^-
   "│-v-2 │ Used by spiffy_foldtext#SpiffyFoldText()
   "└─────┴──────────────────────────────────────────
 
 function! s:ParseFormatString(...) "-v-
-	let s:parsed_string = [""]
+	let s:parsed_dictionary[s:StringToUse()] = [""]
 	
 	let l:still_to_parse = a:1
 	while len(l:still_to_parse) != 0
@@ -178,8 +166,6 @@ function! s:ParseFormatString(...) "-v-
 			let l:still_to_parse = strpart(l:still_to_parse, 1)
 		endif
 	endwhile
-	
-	let s:done_parsing = 1
 endfunction "-^-
 
 function! s:CompileFormatString(...) "-v-
@@ -207,9 +193,9 @@ function! s:ExecuteCallbacks() "-v-
 	let l:lines_count = v:foldend - v:foldstart + 1
 	
 	let l:element = ''
-	for i in range(len(s:parsed_string))
+	for i in range(len(s:ParsedString()))
 		unlet l:element
-		let l:element = s:parsed_string[i]
+		let l:element = s:ParsedString()[i]
 		if type(l:element) == type({})
 			let l:callbacked_string += [l:element, ""]
 		elseif type(l:element) == type([])
@@ -408,6 +394,31 @@ endfunction "-^-
 
   "┌─────┬──────────────────────────────────────────
   "│-^-2 │ Used by spiffy_foldtext#ActualWinwidth()
+
+"│-v-1 │ Unsorted Functions
+"└─────┴────────────────────
+
+function! s:ParsedString()
+	let l:string_to_use = s:StringToUse()
+	
+	if !has_key(s:parsed_dictionary, l:string_to_use)
+		let s:parsed_dictionary[l:string_to_use] = s:ParseFormatString(l:string_to_use)
+	endif
+	
+	return s:parsed_dictionary[l:string_to_use]
+endfunction
+
+function! s:StringToUse()
+	if exists('w:spiffy_format_string')
+		let l:string_to_use = w:spiffy_format_string
+	elseif exists('b:spiffy_format_string')
+		let l:string_to_use = b:spiffy_format_string
+	else
+		let l:string_to_use = g:SpiffyFoldtext_format
+	endif
+	
+	return l:string_to_use
+endfunction
 
 " -v-1 modeline
 " vim: set fmr=-v-,-^- fdm=marker list noet ts=4 sw=4 sts=4 :

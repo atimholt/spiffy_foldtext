@@ -6,7 +6,6 @@ import subprocess
 
 project_path = os.path.join(os.path.dirname(__file__), '../')
 project_path = os.path.abspath(project_path)
-print(project_path)
 
 simple_vimrc = os.path.join(os.path.dirname(__file__), 'simple_vimrc.vim')
 
