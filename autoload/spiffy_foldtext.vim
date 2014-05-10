@@ -126,9 +126,9 @@ endfunction "-^-
   "│-v-2 │ Used by spiffy_foldtext#SpiffyFoldText()
   "└─────┴──────────────────────────────────────────
 
-function! s:CompileFormatString(...) "-v-
+function! s:CompileFormatString(parsed_string) "-v-
 	
-	let l:callbacked_string = s:ExecuteCallbacks()
+	let l:callbacked_string = s:ExecuteCallbacks(a:parsed_string)
 	let l:actual_winwidth = spiffy_foldtext#ActualWinwidth()
 	let l:length_so_far = s:LengthOfListsStrings(l:callbacked_string)
 	
@@ -143,7 +143,7 @@ endfunction "-^-
     "│-v-3 │ Used by s:CompileFormatString()
     "└─────┴─────────────────────────────────
 
-function! s:ExecuteCallbacks() "-v-
+function! s:ExecuteCallbacks(parsed_string) "-v-
 	let l:callbacked_string = [""]
 	
 	" Used by the callbacks
@@ -151,9 +151,9 @@ function! s:ExecuteCallbacks() "-v-
 	let l:lines_count = v:foldend - v:foldstart + 1
 	
 	let l:element = ''
-	for i in range(len(s:ParsedString()))
+	for i in range(len(a:parsed_string))
 		unlet l:element
-		let l:element = s:ParsedString()[i]
+		let l:element = a:parsed_string[i]
 		if type(l:element) == type({})
 			let l:callbacked_string += [l:element, ""]
 		elseif type(l:element) == type([])
