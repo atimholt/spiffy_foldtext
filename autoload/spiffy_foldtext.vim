@@ -121,50 +121,10 @@ endfunction "-^-
 
 let s:parsed_dictionary = {}
 function! spiffy_foldtext#SpiffyFoldText() "-v-
-	return s:CompileFormatString(s:ParsedString())
+	return s:CompileFormatString(s:ParsedString(s:StringToUse()))
 endfunction "-^-
   "│-v-2 │ Used by spiffy_foldtext#SpiffyFoldText()
   "└─────┴──────────────────────────────────────────
-
-function! s:ParseFormatString(string_to_parse) "-v-
-	let l:parsed_string = [""]
-	let l:still_to_parse = a:string_to_parse
-	while len(l:still_to_parse) != 0
-		let l:nomatch = 1
-		for l:parse_datum in s:parse_data
-			let l:full_pattern = '^' . l:parse_datum.pattern . '\(.*\)$'
-			let l:match_list = matchlist(l:still_to_parse, l:full_pattern)
-			
-			if len(l:match_list) != 0
-				let l:nomatch = 0
-				
-				unlet l:callback_return " Type can’t change without this.
-				exe 'let l:callback_return = ' . l:parse_datum.callback
-				
-				if type(l:callback_return) == type("") && type(l:parsed_string[-1]) == type("")
-					let l:parsed_string[-1] .= l:callback_return
-				else
-					let l:parsed_string += [l:callback_return]
-				endif
-				
-				let l:still_to_parse = l:match_list[l:parse_datum.capture_count + 1]
-				break
-			endif
-		endfor
-		if l:nomatch
-			" This will only happen with a badly formed format string (or one
-			" that uses patterns not available in their installed version).
-			" The user really ought to fix their string, but this at least
-			" keeps the loop from being infinite when they've made a mistake.
-			"
-			" The effect *should* be the ignoring of non-escaped %'s that
-			" aren't part of a defined pattern.
-			let l:still_to_parse = strpart(l:still_to_parse, 1)
-		endif
-	endwhile
-	
-	return l:parsed_string
-endfunction "-^-
 
 function! s:CompileFormatString(...) "-v-
 	
@@ -278,6 +238,18 @@ endfunction "-^-
     "┌─────┬─────────────────────────────────
     "│-^-3 │ Used by s:CompileFormatString()
 
+function! s:StringToUse() "-v-
+	if exists('w:spiffy_format_string')
+		let l:string_to_use = w:spiffy_format_string
+	elseif exists('b:spiffy_format_string')
+		let l:string_to_use = b:spiffy_format_string
+	else
+		let l:string_to_use = g:SpiffyFoldtext_format
+	endif
+	
+	return l:string_to_use
+endfunction "-^-
+
   "┌─────┬──────────────────────────────────────────
   "│-^-2 │ Used by spiffy_foldtext#SpiffyFoldText()
 
@@ -311,6 +283,60 @@ function! s:FillSpaceWithString(the_string, available_dispwidth) "-v-
 	let l:return_val .= s:KeepLength(a:the_string, l:frac_part_repeat)
 	return l:return_val
 endfunction "-^-
+
+function! s:ParsedString(string_to_parse) "-v-
+	" memoized
+	if !has_key(s:parsed_dictionary, a:string_to_parse)
+		let s:parsed_dictionary[a:string_to_parse] = s:ParseFormatString(a:string_to_parse)
+	endif
+	
+	return s:parsed_dictionary[a:string_to_parse]
+endfunction "-^-
+  "│-v-2 │ Used by s:ParsedString()
+  "└─────┴──────────────────────────
+
+function! s:ParseFormatString(string_to_parse) "-v-
+	let l:parsed_string = [""]
+	let l:still_to_parse = a:string_to_parse
+	while len(l:still_to_parse) != 0
+		let l:nomatch = 1
+		for l:parse_datum in s:parse_data
+			let l:full_pattern = '^' . l:parse_datum.pattern . '\(.*\)$'
+			let l:match_list = matchlist(l:still_to_parse, l:full_pattern)
+			
+			if len(l:match_list) != 0
+				let l:nomatch = 0
+				
+				unlet l:callback_return " Type can’t change without this.
+				exe 'let l:callback_return = ' . l:parse_datum.callback
+				
+				if type(l:callback_return) == type("") && type(l:parsed_string[-1]) == type("")
+					let l:parsed_string[-1] .= l:callback_return
+				else
+					let l:parsed_string += [l:callback_return]
+				endif
+				
+				let l:still_to_parse = l:match_list[l:parse_datum.capture_count + 1]
+				break
+			endif
+		endfor
+		if l:nomatch
+			" This will only happen with a badly formed format string (or one
+			" that uses patterns not available in their installed version).
+			" The user really ought to fix their string, but this at least
+			" keeps the loop from being infinite when they've made a mistake.
+			"
+			" The effect *should* be the ignoring of non-escaped %'s that
+			" aren't part of a defined pattern.
+			let l:still_to_parse = strpart(l:still_to_parse, 1)
+		endif
+	endwhile
+	
+	return l:parsed_string
+endfunction "-^-
+
+  "┌─────┬──────────────────────────
+  "│-^-2 │ Used by s:ParsedString()
 
 "│-v-1 │ Generally useful functions
 "└─────┴────────────────────────────
@@ -393,30 +419,6 @@ endfunction "-^-
   "┌─────┬──────────────────────────────────────────
   "│-^-2 │ Used by spiffy_foldtext#ActualWinwidth()
 
-"│-v-1 │ Unsorted Functions
-"└─────┴────────────────────
-
-function! s:ParsedString()
-	let l:string_to_use = s:StringToUse()
-	
-	if !has_key(s:parsed_dictionary, l:string_to_use)
-		let s:parsed_dictionary[l:string_to_use] = s:ParseFormatString(l:string_to_use)
-	endif
-	
-	return s:parsed_dictionary[l:string_to_use]
-endfunction
-
-function! s:StringToUse()
-	if exists('w:spiffy_format_string')
-		let l:string_to_use = w:spiffy_format_string
-	elseif exists('b:spiffy_format_string')
-		let l:string_to_use = b:spiffy_format_string
-	else
-		let l:string_to_use = g:SpiffyFoldtext_format
-	endif
-	
-	return l:string_to_use
-endfunction
 
 " -v-1 modeline
 " vim: set fmr=-v-,-^- fdm=marker list noet ts=4 sw=4 sts=4 :
