@@ -119,7 +119,6 @@ endfunction "-^-
 "│-v-1 │ Main functionality
 "└─────┴────────────────────
 
-let s:parsed_dictionary = {}
 function! spiffy_foldtext#SpiffyFoldText() "-v-
 	return s:CompileFormatString(s:ParsedString(s:StringToUse()))
 endfunction "-^-
@@ -284,6 +283,7 @@ function! s:FillSpaceWithString(the_string, available_dispwidth) "-v-
 	return l:return_val
 endfunction "-^-
 
+let s:parsed_dictionary = {}
 function! s:ParsedString(string_to_parse) "-v-
 	" memoized
 	if !has_key(s:parsed_dictionary, a:string_to_parse)
