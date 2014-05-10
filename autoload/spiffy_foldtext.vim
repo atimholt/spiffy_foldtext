@@ -84,26 +84,16 @@ let s:parse_data = [ s:literal_text, s:escaped_percent, s:filled_text_of_line,
   "│-v-2 │ s:parse_data callback functions
   "└─────┴─────────────────────────────────
 
-function! s:AppendString(...) "-v-
-	if type(a:1) == type("") && type(s:ParsedString()[-1]) == type("")
-		let s:parsed_dictionary[s:StringToUse()][-1] .= a:1
-	else
-		" Should be a list with a single executable string as its only element
-		" (Or a string after such).
-		" Allows delaying output until compiling for a particular fold.
-		" Sticking it in an exe, on the right side of an assignment, MUST
-		" return a string!
-		" Funcrefs are inadequate here for various reasons.
-		let s:parsed_dictionary[s:StringToUse()] += [a:1]
-	endif
+function! s:AppendString(the_string) "-v-
+	return a:the_string
 endfunction "-^-
 
 function! s:MarkSplit() "-v-
-	let s:parsed_dictionary[s:StringToUse()] += [{'mark' : 'split'}]
+	return {'mark' : 'split'}
 endfunction "-^-
 
 function! s:MarkFill(...) "-v-
-	let s:parsed_dictionary[s:StringToUse()] += [{'mark' : 'fill', 'fill_string' : a:1}]
+	return {'mark' : 'fill', 'fill_string' : a:1}
 endfunction "-^-
 
 function! s:FillWhitespace(text_to_change, text_to_repeat) "-v-
@@ -136,10 +126,9 @@ endfunction "-^-
   "│-v-2 │ Used by spiffy_foldtext#SpiffyFoldText()
   "└─────┴──────────────────────────────────────────
 
-function! s:ParseFormatString(...) "-v-
-	let s:parsed_dictionary[s:StringToUse()] = [""]
-	
-	let l:still_to_parse = a:1
+function! s:ParseFormatString(string_to_parse) "-v-
+	let l:parsed_string = [""]
+	let l:still_to_parse = a:string_to_parse
 	while len(l:still_to_parse) != 0
 		let l:nomatch = 1
 		for l:parse_datum in s:parse_data
@@ -149,7 +138,14 @@ function! s:ParseFormatString(...) "-v-
 			if len(l:match_list) != 0
 				let l:nomatch = 0
 				
-				exe 'call ' . l:parse_datum.callback
+				unlet l:callback_return " Type can’t change without this.
+				exe 'let l:callback_return = ' . l:parse_datum.callback
+				
+				if type(l:callback_return) == type("") && type(l:parsed_string[-1]) == type("")
+					let l:parsed_string[-1] .= l:callback_return
+				else
+					let l:parsed_string += [l:callback_return]
+				endif
 				
 				let l:still_to_parse = l:match_list[l:parse_datum.capture_count + 1]
 				break
@@ -166,6 +162,8 @@ function! s:ParseFormatString(...) "-v-
 			let l:still_to_parse = strpart(l:still_to_parse, 1)
 		endif
 	endwhile
+	
+	return l:parsed_string
 endfunction "-^-
 
 function! s:CompileFormatString(...) "-v-
