@@ -242,6 +242,42 @@ Execute (Test spiffy_foldtext#CorrectlySpacify()):
   AssertEqual "    some text    end  ", spiffy_foldtext#CorrectlySpacify(start_val)
 
 
+#  │ ▼2 │ ActualWinwidth()
+#  └─┬──┴─┬────────────────
+#    │ ▼3 │ Common setup
+#    └────┴──────────────
+
+Before:
+  call BasicSetup()
+
+After:
+  call BasicTeardown()
+
+Given (Basic 3 line fold):
+  Some buffer content -v-
+  
+  -^-
+
+#    │ ▼3 │ Tests
+#    └────┴───────
+
+Execute (Test spiffy_foldtext#ActualWinwidth() with number columns):
+  set nonumber norelativenumber
+  AssertEqual 50, spiffy_foldtext#ActualWinwidth()
+
+  set number
+  AssertEqual 46, spiffy_foldtext#ActualWinwidth()
+
+  set nonumber relativenumber
+  AssertEqual 46, spiffy_foldtext#ActualWinwidth()
+
+Execute (Test spiffy_foldtext#ActualWinwidth() with fold column):
+
+Execute (Test spiffy_foldtext#ActualWinwidth() with sign column):
+
+Execute (Test spiffy_foldtext#ActualWinwidth() with multiple column types):
+
+
 # ▼1 modeline
 # vim: set ts=2 sw=2 sts=2 et fdm=marker fmr=▼,▲ :
 
