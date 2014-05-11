@@ -275,6 +275,11 @@ Execute (Test spiffy_foldtext#ActualWinwidth() with number columns):
   AssertEqual 46, spiffy_foldtext#ActualWinwidth()
 
 Execute (Test spiffy_foldtext#ActualWinwidth() with fold column):
+  set foldcolumn=2
+  AssertEqual 48, spiffy_foldtext#ActualWinwidth()
+
+  set foldcolumn=4
+  AssertEqual 46, spiffy_foldtext#ActualWinwidth()
 
 Execute (Test spiffy_foldtext#ActualWinwidth() with sign column):
   sign define a_sign text=ao
