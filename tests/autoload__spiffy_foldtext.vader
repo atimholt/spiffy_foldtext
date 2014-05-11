@@ -24,9 +24,12 @@ Execute (Globally useful function definitions): ▼2
 
 
 #│ ▼1 │ Basic Integration Tests
-#└────┴─────────────────────────
+#└─┬──┴─┬───────────────────────
+#  │ ▼2 │ Common Setup
+#  └────┴──────────────
+    
 
-Given (Basic 3 line fold): ▼2
+Given (Basic 3 line fold):
   Some buffer content -v-
   
   -^-
@@ -37,10 +40,13 @@ Before:
 After:
   call BasicTeardown()
 
-Execute (confirm testing assumptions): ▼2
+#  │ ▼2 │ Tests
+#  └────┴───────
+
+Execute (confirm testing assumptions):
   AssertEqual 50, winwidth(0)
 
-Execute (basic test): ▼2
+Execute (basic test):
   normal zM
   AssertEqual "Some buffer content -v-  ==========|    3 lines |=", foldtextresult(1)
 
@@ -134,7 +140,7 @@ Execute (Text of line):
   AssertEqual "    line      -v----", foldtextresult(1)
 
 
-Given (Basic 3 line fold): ▼2
+Given (Basic 3 line fold):
   Some buffer content -v-
   
   -^-
