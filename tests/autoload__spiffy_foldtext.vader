@@ -287,8 +287,23 @@ Execute (Test spiffy_foldtext#ActualWinwidth() with sign column):
 
   AssertEqual 48, spiffy_foldtext#ActualWinwidth()
 
-Execute (Test spiffy_foldtext#ActualWinwidth() with multiple column types):
+  sign undefine a_sign
 
+Execute (Test spiffy_foldtext#ActualWinwidth() with multiple column types):
+  set number foldcolumn=1
+  AssertEqual 45, spiffy_foldtext#ActualWinwidth()
+
+  " This sign persists through the rest of the tests
+  sign define a_sign text=ao
+  exe ":sign place 2 line=23 name=a_sign file=" . expand("%:p")
+
+  set nonumber foldcolumn=1
+  AssertEqual 47, spiffy_foldtext#ActualWinwidth()
+
+  set number foldcolumn=1
+  AssertEqual 43, spiffy_foldtext#ActualWinwidth()
+
+  sign undefine a_sign
 
 # ▼1 modeline
 # vim: set ts=2 sw=2 sts=2 et fdm=marker fmr=▼,▲ :
