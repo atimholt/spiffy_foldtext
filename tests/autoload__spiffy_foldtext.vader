@@ -192,6 +192,56 @@ Execute (Formatted Level Count):
   AssertEqual "    2----------", foldtextresult(2)
 
 
+#│ ▼1 │ Functions
+#└─┬──┴─┬─────────
+#  │ ▼2 │ Setup
+#  └────┴───────
+Execute (Setup function definitions): ▼3
+
+  function! FunctionTestSetup() "▼
+    set foldmethod=marker
+    set foldmarker=-v-,-^-
+  endfunction "▲
+
+  function! FunctionTestTeardown() "▼
+    if exists('w:spiffy_format_string')
+      unlet w:spiffy_format_string
+    endif
+    if exists('b:spiffy_format_string')
+      unlet b:spiffy_format_string
+    endif
+  endfunction "▲
+
+#  │ ▼2 │ CorrectlySpacify()
+#  └─┬──┴─┬───────────────────
+#    │ ▼3 │ Common setup
+#    └────┴──────────────
+
+Before:
+  call FunctionTestSetup()
+
+After:
+  call FunctionTestTeardown()
+
+Given (Basic 3 line fold):
+  Some buffer content -v-
+  
+  -^-
+
+#    │ ▼3 │ Tests
+#    └────┴───────
+
+Execute (Test spiffy_foldtext#CorrectlySpacify()):
+  " The key is, expansion of a tab depends on the column it’s in!
+  let start_val = "\t\tsome text \t end  "
+
+  set ts=4
+  AssertEqual "        some text    end  ", spiffy_foldtext#CorrectlySpacify(start_val)
+
+  set ts=2
+  AssertEqual "    some text    end  ", spiffy_foldtext#CorrectlySpacify(start_val)
+
+
 # ▼1 modeline
 # vim: set ts=2 sw=2 sts=2 et fdm=marker fmr=▼,▲ :
 
