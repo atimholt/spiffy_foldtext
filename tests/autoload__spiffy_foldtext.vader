@@ -252,6 +252,9 @@ Before:
 
 After:
   call BasicTeardown()
+  set nonumber norelativenumber
+  set foldcolumn=0
+  sign unplace *
 
 Given (Basic 3 line fold):
   Some buffer content -v-
@@ -274,6 +277,10 @@ Execute (Test spiffy_foldtext#ActualWinwidth() with number columns):
 Execute (Test spiffy_foldtext#ActualWinwidth() with fold column):
 
 Execute (Test spiffy_foldtext#ActualWinwidth() with sign column):
+  sign define a_sign text=ao
+  exe ":sign place 2 line=23 name=a_sign file=" . expand("%:p")
+
+  AssertEqual 48, spiffy_foldtext#ActualWinwidth()
 
 Execute (Test spiffy_foldtext#ActualWinwidth() with multiple column types):
 
