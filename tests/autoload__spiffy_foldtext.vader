@@ -14,11 +14,11 @@ Execute (Globally useful function definitions): ▼2
   function! BasicTeardown() "▼
     quit " Close vertical split
 
-    if exists('w:spiffy_format_string')
-      unlet w:spiffy_format_string
+    if exists('w:SpiffyFoldtext_format')
+      unlet w:SpiffyFoldtext_format
     endif
-    if exists('b:spiffy_format_string')
-      unlet b:spiffy_format_string
+    if exists('b:SpiffyFoldtext_format')
+      unlet b:SpiffyFoldtext_format
     endif
   endfunction "▲
 
@@ -73,22 +73,22 @@ Given (Basic 3 line fold):
 #    └────┴───────
 
 Execute (Change foldtext at runtime (buffer local)):
-  let b:spiffy_format_string = "buffer local value."
+  let b:SpiffyFoldtext_format = "buffer local value."
   normal zRzM
 
   AssertEqual "buffer local value.------", foldtextresult(1)
 
 
 Execute (Change foldtext at runtime (window local)):
-  let w:spiffy_format_string = "window local value."
+  let w:SpiffyFoldtext_format = "window local value."
   normal zRzM
 
   AssertEqual "window local value.------", foldtextresult(1)
 
 
 Execute (window local overrides buffer local):
-  let w:spiffy_format_string = "window local value."
-  let b:spiffy_format_string = "buffer local value."
+  let w:SpiffyFoldtext_format = "window local value."
+  let b:SpiffyFoldtext_format = "buffer local value."
   normal zRzM
 
   AssertEqual "window local value.------", foldtextresult(1)
@@ -116,7 +116,7 @@ Given (Basic 3 line fold):
 #    └────┴───────
 
 Execute (Escaped percent sign):
-  let w:spiffy_format_string = "%%"
+  let w:SpiffyFoldtext_format = "%%"
   normal zRzM
 
   AssertEqual "%---------", foldtextresult(1)
@@ -127,14 +127,14 @@ Given (1st line has wide whitespace):
   -^-
 
 Execute (Filled Text of line):
-  let w:spiffy_format_string = "%c{ao}"
+  let w:SpiffyFoldtext_format = "%c{ao}"
   vertical resize 20
   normal zM
   AssertEqual "aoa line aoao -v----", foldtextresult(1)
 
 
 Execute (Text of line):
-  let w:spiffy_format_string = "%c"
+  let w:SpiffyFoldtext_format = "%c"
   vertical resize 20
   normal zM
   AssertEqual "    line      -v----", foldtextresult(1)
@@ -147,21 +147,21 @@ Given (Basic 3 line fold):
 
 
 Execute (Split Mark):
-  let w:spiffy_format_string = "0123456789%<0123456789"
+  let w:SpiffyFoldtext_format = "0123456789%<0123456789"
   vertical resize 15
   normal zM
   AssertEqual "012340123456789", foldtextresult(1)
 
 
 Execute (Fill Mark):
-  let w:spiffy_format_string = "0123%f{ao}0123"
+  let w:SpiffyFoldtext_format = "0123%f{ao}0123"
   vertical resize 15
   normal zM
   AssertEqual "0123aoaoaoa0123", foldtextresult(1)
 
 
 Execute (Formatted Line Count):
-  let w:spiffy_format_string = "a%5nb"
+  let w:SpiffyFoldtext_format = "a%5nb"
   vertical resize 15
   normal zM
   AssertEqual "a    3b--------", foldtextresult(1)
@@ -175,7 +175,7 @@ Given (Multiple Fold levels):
 
 
 Execute (Fold level indent):
-  let w:spiffy_format_string = "%l{ao}"
+  let w:SpiffyFoldtext_format = "%l{ao}"
   vertical resize 15
   normal zM
   AssertEqual "---------------", foldtextresult(1)
@@ -184,7 +184,7 @@ Execute (Fold level indent):
 
 
 Execute (Formatted Level Count):
-  let w:spiffy_format_string = "%5fl"
+  let w:SpiffyFoldtext_format = "%5fl"
   vertical resize 15
   normal zM
   AssertEqual "    1----------", foldtextresult(1)
@@ -204,11 +204,11 @@ Execute (Setup function definitions): ▼3
   endfunction "▲
 
   function! FunctionTestTeardown() "▼
-    if exists('w:spiffy_format_string')
-      unlet w:spiffy_format_string
+    if exists('w:SpiffyFoldtext_format')
+      unlet w:SpiffyFoldtext_format
     endif
-    if exists('b:spiffy_format_string')
-      unlet b:spiffy_format_string
+    if exists('b:SpiffyFoldtext_format')
+      unlet b:SpiffyFoldtext_format
     endif
   endfunction "▲
 

@@ -238,10 +238,10 @@ endfunction "-^-
     "│-^-3 │ Used by s:CompileFormatString()
 
 function! s:StringToUse() "-v-
-	if exists('w:spiffy_format_string')
-		let l:string_to_use = w:spiffy_format_string
-	elseif exists('b:spiffy_format_string')
-		let l:string_to_use = b:spiffy_format_string
+	if exists('w:SpiffyFoldtext_format')
+		let l:string_to_use = w:SpiffyFoldtext_format
+	elseif exists('b:SpiffyFoldtext_format')
+		let l:string_to_use = b:SpiffyFoldtext_format
 	else
 		let l:string_to_use = g:SpiffyFoldtext_format
 	endif
