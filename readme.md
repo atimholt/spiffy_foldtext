@@ -155,8 +155,8 @@ Also, please don't be offended if I don't accept, or if I heavily modify, your
 contributions. I don't want this thing to get to bloated, or to contradict its
 own purpose, or whatever have you.
 
-or even giving me money:
-bitcoin:1FGQqbjSGHrQVeUc12LJY6F2g1TEDyJ7Ts
+or even giving me money:  
+bitcoin:1FGQqbjSGHrQVeUc12LJY6F2g1TEDyJ7Ts  
 and make sure to let me know who sent it and why!
 
 I'm not a lawyer, but let me try to make a disclaimer: Any money sent to me is

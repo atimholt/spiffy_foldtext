@@ -1,0 +1,310 @@
+# tests/autoload__spiffy_foldtext.vader
+
+#│ ▼1 │ Global setup
+#└────┴──────────────
+Execute (Globally useful function definitions): ▼2
+
+  function! BasicSetup() "▼
+    set foldmethod=marker
+    set foldmarker=-v-,-^-
+    silent only " Failed tests don’t run the After block.
+    50vsplit " A predictable width, important for this domain.
+  endfunction "▲
+
+  function! BasicTeardown() "▼
+    quit " Close vertical split
+
+    if exists('w:SpiffyFoldtext_format')
+      unlet w:SpiffyFoldtext_format
+    endif
+    if exists('b:SpiffyFoldtext_format')
+      unlet b:SpiffyFoldtext_format
+    endif
+  endfunction "▲
+
+
+#│ ▼1 │ Basic Integration Tests
+#└─┬──┴─┬───────────────────────
+#  │ ▼2 │ Common Setup
+#  └────┴──────────────
+    
+
+Given (Basic 3 line fold):
+  Some buffer content -v-
+  
+  -^-
+
+Before:
+  call BasicSetup()
+
+After:
+  call BasicTeardown()
+
+#  │ ▼2 │ Tests
+#  └────┴───────
+
+Execute (confirm testing assumptions):
+  AssertEqual 50, winwidth(0)
+
+Execute (basic test):
+  normal zM
+  AssertEqual "Some buffer content -v-  ==========|    3 lines |=", foldtextresult(1)
+
+#│ ▼1 │ Features
+#└─┬──┴─┬────────
+#  │ ▼2 │ On-the-fly foldtext changing
+#  └─┬──┴─┬────────────────────────────
+#    │ ▼3 │ Common setup
+#    └────┴──────────────
+
+Before:
+  call BasicSetup()
+  vertical resize 25
+
+After:
+  call BasicTeardown()
+
+Given (Basic 3 line fold):
+  Some buffer content -v-
+  
+  -^-
+
+#    │ ▼3 │ Tests
+#    └────┴───────
+
+Execute (Change foldtext at runtime (buffer local)):
+  let b:SpiffyFoldtext_format = "buffer local value."
+  normal zRzM
+
+  AssertEqual "buffer local value.------", foldtextresult(1)
+
+
+Execute (Change foldtext at runtime (window local)):
+  let w:SpiffyFoldtext_format = "window local value."
+  normal zRzM
+
+  AssertEqual "window local value.------", foldtextresult(1)
+
+
+Execute (window local overrides buffer local):
+  let w:SpiffyFoldtext_format = "window local value."
+  let b:SpiffyFoldtext_format = "buffer local value."
+  normal zRzM
+
+  AssertEqual "window local value.------", foldtextresult(1)
+
+
+#  │ ▼2 │ Formatting Triggers
+#  └─┬──┴─┬───────────────────
+#    │ ▼3 │ Common setup
+#    └────┴──────────────
+
+Before:
+  call BasicSetup()
+  set winwidth=10
+  vertical resize 10
+
+After:
+  call BasicTeardown()
+
+Given (Basic 3 line fold):
+  Some buffer content -v-
+  
+  -^-
+
+#    │ ▼3 │ Tests
+#    └────┴───────
+
+Execute (Escaped percent sign):
+  let w:SpiffyFoldtext_format = "%%"
+  normal zRzM
+
+  AssertEqual "%---------", foldtextresult(1)
+
+Given (1st line has wide whitespace):
+      line      -v----
+  
+  -^-
+
+Execute (Filled Text of line):
+  let w:SpiffyFoldtext_format = "%c{ao}"
+  vertical resize 20
+  normal zM
+  AssertEqual "aoa line aoao -v----", foldtextresult(1)
+
+
+Execute (Text of line):
+  let w:SpiffyFoldtext_format = "%c"
+  vertical resize 20
+  normal zM
+  AssertEqual "    line      -v----", foldtextresult(1)
+
+
+Given (Basic 3 line fold):
+  Some buffer content -v-
+  
+  -^-
+
+
+Execute (Split Mark):
+  let w:SpiffyFoldtext_format = "0123456789%<0123456789"
+  vertical resize 15
+  normal zM
+  AssertEqual "012340123456789", foldtextresult(1)
+
+
+Execute (Fill Mark):
+  let w:SpiffyFoldtext_format = "0123%f{ao}0123"
+  vertical resize 15
+  normal zM
+  AssertEqual "0123aoaoaoa0123", foldtextresult(1)
+
+
+Execute (Formatted Line Count):
+  let w:SpiffyFoldtext_format = "a%5nb"
+  vertical resize 15
+  normal zM
+  AssertEqual "a    3b--------", foldtextresult(1)
+
+
+Given (Multiple Fold levels):
+  some text -v-
+  some more -v-
+  -^-
+  -^-
+
+
+Execute (Fold level indent):
+  let w:SpiffyFoldtext_format = "%l{ao}"
+  vertical resize 15
+  normal zM
+  AssertEqual "---------------", foldtextresult(1)
+  normal zR2Gzc
+  AssertEqual "ao-------------", foldtextresult(2)
+
+
+Execute (Formatted Level Count):
+  let w:SpiffyFoldtext_format = "%5fl"
+  vertical resize 15
+  normal zM
+  AssertEqual "    1----------", foldtextresult(1)
+  normal zR2Gzc
+  AssertEqual "    2----------", foldtextresult(2)
+
+
+#│ ▼1 │ Functions
+#└─┬──┴─┬─────────
+#  │ ▼2 │ Setup
+#  └────┴───────
+Execute (Setup function definitions): ▼3
+
+  function! FunctionTestSetup() "▼
+    set foldmethod=marker
+    set foldmarker=-v-,-^-
+  endfunction "▲
+
+  function! FunctionTestTeardown() "▼
+    if exists('w:SpiffyFoldtext_format')
+      unlet w:SpiffyFoldtext_format
+    endif
+    if exists('b:SpiffyFoldtext_format')
+      unlet b:SpiffyFoldtext_format
+    endif
+  endfunction "▲
+
+#  │ ▼2 │ CorrectlySpacify()
+#  └─┬──┴─┬───────────────────
+#    │ ▼3 │ Common setup
+#    └────┴──────────────
+
+Before:
+  call FunctionTestSetup()
+
+After:
+  call FunctionTestTeardown()
+
+Given (Basic 3 line fold):
+  Some buffer content -v-
+  
+  -^-
+
+#    │ ▼3 │ Tests
+#    └────┴───────
+
+Execute (Test spiffy_foldtext#CorrectlySpacify()):
+  " The key is, expansion of a tab depends on the column it’s in!
+  let start_val = "\t\tsome text \t end  "
+
+  set ts=4
+  AssertEqual "        some text    end  ", spiffy_foldtext#CorrectlySpacify(start_val)
+
+  set ts=2
+  AssertEqual "    some text    end  ", spiffy_foldtext#CorrectlySpacify(start_val)
+
+
+#  │ ▼2 │ ActualWinwidth()
+#  └─┬──┴─┬────────────────
+#    │ ▼3 │ Common setup
+#    └────┴──────────────
+
+Before:
+  call BasicSetup()
+
+After:
+  call BasicTeardown()
+  set nonumber norelativenumber
+  set foldcolumn=0
+  sign unplace *
+
+Given (Basic 3 line fold):
+  Some buffer content -v-
+  
+  -^-
+
+#    │ ▼3 │ Tests
+#    └────┴───────
+
+Execute (Test spiffy_foldtext#ActualWinwidth() with number columns):
+  set nonumber norelativenumber
+  AssertEqual 50, spiffy_foldtext#ActualWinwidth()
+
+  set number
+  AssertEqual 46, spiffy_foldtext#ActualWinwidth()
+
+  set nonumber relativenumber
+  AssertEqual 46, spiffy_foldtext#ActualWinwidth()
+
+Execute (Test spiffy_foldtext#ActualWinwidth() with fold column):
+  set foldcolumn=2
+  AssertEqual 48, spiffy_foldtext#ActualWinwidth()
+
+  set foldcolumn=4
+  AssertEqual 46, spiffy_foldtext#ActualWinwidth()
+
+Execute (Test spiffy_foldtext#ActualWinwidth() with sign column):
+  sign define a_sign text=ao
+  exe ":sign place 2 line=23 name=a_sign file=" . expand("%:p")
+
+  AssertEqual 48, spiffy_foldtext#ActualWinwidth()
+
+  sign undefine a_sign
+
+Execute (Test spiffy_foldtext#ActualWinwidth() with multiple column types):
+  set number foldcolumn=1
+  AssertEqual 45, spiffy_foldtext#ActualWinwidth()
+
+  " This sign persists through the rest of the tests
+  sign define a_sign text=ao
+  exe ":sign place 2 line=23 name=a_sign file=" . expand("%:p")
+
+  set nonumber foldcolumn=1
+  AssertEqual 47, spiffy_foldtext#ActualWinwidth()
+
+  set number foldcolumn=1
+  AssertEqual 43, spiffy_foldtext#ActualWinwidth()
+
+  sign undefine a_sign
+
+# ▼1 modeline
+# vim: set ts=2 sw=2 sts=2 et fdm=marker fmr=▼,▲ :
+

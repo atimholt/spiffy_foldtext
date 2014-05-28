@@ -1,7 +1,7 @@
 Brainstorm on more options to add.
-Refactor
-  Organize
-    split stuff up
-  decouple used values from values/functions only available at run time.
 Special-case foldtext:
   v:foldstart ends in open bracket, v:foldend start with closer
+New triggers:
+  elastic regions
+Use one of these in a auto-vim.org packaging script:
+  https://docs.python.org/3.4/library/archiving.html

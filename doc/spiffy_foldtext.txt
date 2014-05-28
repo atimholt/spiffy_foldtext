@@ -21,11 +21,13 @@ CONTENTS                                            *spiffy_foldtext-contents*
        - %f{[fill string]}          |spiffy_foldtext-%f{}|
        - %[some number]n            |spiffy_foldtext-%n|
        - %l{[repeated string]}      |spiffy_foldtext-%l{}|
+       - %[some number]fl           |spiffy_foldtext-%fl|
     3. Other Options                |spiffy_foldtext-options|
        - use_multibyte              |spiffy_foldtext-use_multibyte|
     4. Planned Features             |spiffy_foldtext-planned_features|
     5. Suggestions?                 |spiffy_foldtext-suggestions|
-    6. License                      |spiffy_foldtext-license|
+    6. Change Log                   |spiffy_foldtext-change_log|
+    7. License                      |spiffy_foldtext-license|
 
 ==============================================================================
 
@@ -50,10 +52,11 @@ relevant if you've actually got multi-byte characters enabled.
 ------------------------------------------------------------------------------
 THE FORMAT STRING                              *spiffy_foldtext-format_string*
 
-The format string is customizable by setting the g:SpiffyFoldtext_format
-variable. The format string contains control triggers and literal text
-describing how your folded lines will render. For example, here's the default
-(more or less):
+The format string is customizable by setting the "SpiffyFoldtext_format"
+variable, prepended with "g:" for global scope, "b:" for buffer-local scope,
+or "w:" for window-local scope--each scope overriding those listed before it.
+The format string contains control triggers and literal text describing how
+your folded lines will render. For example, here's the default (more or less):
 >
     if has('multi_byte')
         let g:SpiffyFoldtext_format = "%c{═}  %<%f{═}╡ %4n lines ╞═%l{╤═}"
@@ -184,6 +187,12 @@ trigger will expand to fill the excess space).
 	"+-%l{-} %3n lines: %c"
 <
 
+%[some number]fl                                         *spiffy_foldtext-%fl*
+
+	Inserts the fold level of the fold as a decimal number. The number you
+	give before the "fl" indicates a minimum number of display cells to
+	fill.
+
 ------------------------------------------------------------------------------
 OTHER OPTIONS                                        *spiffy_foldtext-options*
 
@@ -265,6 +274,18 @@ I'm not a lawyer, but let me try to make a disclaimer: Any money sent to me is
 not a charitable donation, it does not guarantee work, and I'll be doing
 whatever I want with it. Please don't feel the need to send me any large sums,
 this is just a simple little plugin. Doesn't hurt to ask, though, eh?
+
+------------------------------------------------------------------------------
+CHANGE LOG                                        *spiffy_foldtext-change_log*
+
+1.1:
+  - Added window local fold-text, to override global fold text or buffer local
+    foldtext when present.
+  - Added buffer local fold-text, to override global fold text when present.
+  - Unit tests for stability and changeability (not really a feature)
+  - Added %[some number]fl trigger, inserting fold level
+1.0:
+  - initial release
 
 ------------------------------------------------------------------------------
 LICENSE                                              *spiffy_foldtext-license*
